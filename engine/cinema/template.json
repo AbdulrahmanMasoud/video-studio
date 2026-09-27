@@ -1,0 +1,1 @@
+{"name": "cinema", "title": "Cinema", "category": "Storytelling", "summary": "Trailer / documentary look: letterbox, film grain, serif titles, Ken Burns shots, chapter cards", "fonts": ["display", "body", "serif"], "captions": {"style": "line", "maxWords": 7}, "music": {"mood": "cinematic"}, "scenes": ["title", "shot", "chapter", "end", "text", "media"]}

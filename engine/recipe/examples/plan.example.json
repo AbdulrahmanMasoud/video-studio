@@ -1,0 +1,73 @@
+{
+  "music": {
+    "mood": "jazzy"
+  },
+  "scenes": [
+    {
+      "type": "title",
+      "start": 0,
+      "text": "Garlic butter pasta",
+      "time": "15 min",
+      "servings": "2",
+      "at": 0.2
+    },
+    {
+      "type": "ingredients",
+      "start": "w:6-0.1",
+      "items": [
+        {
+          "text": "Pasta",
+          "qty": "200 g",
+          "at": "w:8"
+        },
+        {
+          "text": "Butter",
+          "qty": "3 tbsp",
+          "at": "w:9"
+        },
+        {
+          "text": "Garlic",
+          "qty": "4 cloves",
+          "at": "w:10"
+        },
+        {
+          "text": "Parmesan",
+          "qty": "50 g",
+          "at": "w:11"
+        },
+        {
+          "text": "Parsley",
+          "qty": "a handful",
+          "at": "w:13"
+        }
+      ]
+    },
+    {
+      "type": "step",
+      "start": "w:14-0.1",
+      "text": "Boil the pasta",
+      "timer": 600,
+      "at": "w:14"
+    },
+    {
+      "type": "step",
+      "start": "w:20-0.1",
+      "text": "Melt butter, fry the garlic",
+      "at": "w:20"
+    },
+    {
+      "type": "step",
+      "start": "w:27-0.1",
+      "text": "Toss with the cheese",
+      "at": "w:27"
+    },
+    {
+      "type": "final",
+      "start": "w:33-0.1",
+      "text": "Dinner is ready!",
+      "at": "w:35"
+    }
+  ],
+  "lang": "en",
+  "demoScript": "Garlic butter pasta in fifteen minutes. You need pasta, butter, garlic, parmesan, and parsley. Boil the pasta for ten minutes. Melt the butter and fry the garlic. Toss everything together with the cheese. That's it, dinner is ready."
+}

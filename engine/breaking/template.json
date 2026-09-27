@@ -1,0 +1,1 @@
+{"name": "breaking", "title": "Breaking", "category": "News", "summary": "News bulletin: BREAKING banner, headline bar, media window, key points, LIVE badge and ticker", "fonts": ["display", "body"], "captions": {"style": "boxed", "maxWords": 5}, "music": {"mood": "news"}, "scenes": ["headline", "point", "text", "media"]}

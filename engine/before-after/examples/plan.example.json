@@ -1,0 +1,49 @@
+{
+  "music": {
+    "mood": "upbeat"
+  },
+  "demoMedia": {
+    "before_img": "image",
+    "after_img": "video"
+  },
+  "scenes": [
+    {
+      "type": "compare",
+      "start": 0,
+      "at": 0.1,
+      "wipeAt": "w:20",
+      "before": {
+        "label": "BEFORE",
+        "media": "before_img"
+      },
+      "after": {
+        "label": "AFTER",
+        "media": "after_img"
+      }
+    },
+    {
+      "type": "split",
+      "start": "w:33-0.1",
+      "at": "w:33",
+      "afterAt": "w:36",
+      "before": {
+        "label": "BEFORE",
+        "items": [
+          "Cables everywhere",
+          "No light",
+          "Can't focus"
+        ]
+      },
+      "after": {
+        "label": "AFTER",
+        "items": [
+          "Cable tray",
+          "One lamp",
+          "Monitor arm"
+        ]
+      }
+    }
+  ],
+  "lang": "en",
+  "demoScript": "This is my desk before. Cables everywhere, no light, and I could never focus. One weekend and eighty dollars later, here's the after. Clean, bright, and I actually want to work here now. Here's what changed. Cable tray, one lamp, and a monitor arm."
+}

@@ -1,0 +1,47 @@
+{
+  "music": {
+    "mood": "upbeat",
+    "drop": "w:0"
+  },
+  "scenes": [
+    {
+      "type": "product",
+      "start": 0,
+      "name": "Aura Bottle",
+      "tagline": "The bottle that reminds you to drink",
+      "badge": "NEW",
+      "at": "w:0",
+      "features": [
+        {
+          "text": "Glows to remind you",
+          "at": "w:11",
+          "icon": "bolt"
+        },
+        {
+          "text": "Cold for 24h",
+          "at": "w:18",
+          "icon": "clock"
+        },
+        {
+          "text": "Tracks in the app",
+          "at": "w:26",
+          "icon": "check"
+        }
+      ],
+      "price": 39,
+      "oldPrice": 59,
+      "currency": "$",
+      "priceAt": "w:35"
+    },
+    {
+      "type": "cta",
+      "start": "w:38-0.1",
+      "text": "Get yours today",
+      "button": "Shop now",
+      "sub": "Free shipping this week",
+      "at": "w:38"
+    }
+  ],
+  "lang": "en",
+  "demoScript": "Meet Aura, the water bottle that reminds you to drink. It glows when it's time for a sip, keeps drinks cold for twenty four hours, and tracks every ounce in the app. All for just thirty nine dollars. Get yours today."
+}

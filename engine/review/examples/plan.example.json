@@ -1,0 +1,54 @@
+{
+  "music": {
+    "mood": "upbeat"
+  },
+  "scenes": [
+    {
+      "type": "score",
+      "start": 0,
+      "product": "Wave X Headphones",
+      "rating": 4.2,
+      "max": 5,
+      "at": "w:10",
+      "sub": "After 30 days of daily use"
+    },
+    {
+      "type": "pros",
+      "start": "w:16-0.1",
+      "items": [
+        {
+          "text": "Amazing battery life",
+          "at": "w:18"
+        },
+        {
+          "text": "Great noise cancelling",
+          "at": "w:22"
+        }
+      ]
+    },
+    {
+      "type": "cons",
+      "start": "w:25-0.1",
+      "items": [
+        {
+          "text": "Heavy",
+          "at": "w:28"
+        },
+        {
+          "text": "Buggy app",
+          "at": "w:33"
+        }
+      ]
+    },
+    {
+      "type": "verdict",
+      "start": "w:34-0.1",
+      "text": "BUY IT",
+      "positive": true,
+      "sub": "If you travel a lot",
+      "at": "w:39"
+    }
+  ],
+  "lang": "en",
+  "demoScript": "I used these headphones for a month. Here's my score: four point two out of five. The good: amazing battery life and great noise cancelling. The bad: they're heavy and the app is buggy. So should you buy them? Yes, if you travel a lot."
+}

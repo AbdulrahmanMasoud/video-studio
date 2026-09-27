@@ -1,0 +1,49 @@
+{
+  "music": {
+    "mood": "lofi"
+  },
+  "scenes": [
+    {
+      "type": "chat",
+      "start": 0,
+      "title": "AI Assistant",
+      "messages": [
+        {
+          "from": "user",
+          "text": "Plan my week. I have a job, the gym 3x, and a side project.",
+          "at": "w:13",
+          "end": "we:27"
+        },
+        {
+          "from": "ai",
+          "text": "Happy to! One question first: when do you have the most energy?",
+          "at": "w:28",
+          "end": "we:39",
+          "think": 0.6
+        },
+        {
+          "from": "user",
+          "text": "Mornings",
+          "at": "w:40",
+          "end": "we:42",
+          "react": "heart"
+        },
+        {
+          "from": "ai",
+          "text": "Here's your week:\n• 7–9am deep work on the side project\n• 9–5 job\n• Mon/Wed/Fri gym after work\n• Sunday: review & plan",
+          "at": "w:43",
+          "end": "we:60"
+        }
+      ]
+    },
+    {
+      "type": "result",
+      "start": "w:61-0.1",
+      "title": "Try it yourself",
+      "text": "Tell it your constraints, let it ask questions, then ask for the schedule.",
+      "at": "w:61"
+    }
+  ],
+  "lang": "en",
+  "demoScript": "I asked AI to plan my week and it actually worked. I typed: plan my week, I have a job, the gym three times, and a side project. It asked me one question: when do you have the most energy? I said mornings. Then it gave me a full schedule with deep work in the morning and the gym after work. Try it yourself."
+}

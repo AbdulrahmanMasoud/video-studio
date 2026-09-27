@@ -1,0 +1,45 @@
+{
+  "music": {
+    "mood": "cinematic"
+  },
+  "scenes": [
+    {
+      "type": "timeline",
+      "start": 0,
+      "title": "My journey",
+      "events": [
+        {
+          "year": 2015,
+          "label": "First line of code",
+          "at": "w:1"
+        },
+        {
+          "year": 2017,
+          "label": "First job",
+          "at": "w:10"
+        },
+        {
+          "year": 2020,
+          "label": "Started freelancing",
+          "at": "w:20"
+        },
+        {
+          "year": 2023,
+          "label": "Launched my company",
+          "at": "w:27"
+        }
+      ]
+    },
+    {
+      "type": "milestone",
+      "start": "w:34-0.1",
+      "from": 2015,
+      "year": 2026,
+      "title": "1,000,000 users",
+      "text": "And we're just getting started",
+      "at": "w:34"
+    }
+  ],
+  "lang": "en",
+  "demoScript": "In twenty fifteen I wrote my first line of code. Two years later I got my first job. In twenty twenty I started freelancing. Then in twenty twenty three I launched my own company. And this year we crossed one million users."
+}

@@ -1,0 +1,55 @@
+{
+  "music": {
+    "mood": "none"
+  },
+  "data": {
+    "show": "The Build Show",
+    "speakers": [
+      {
+        "name": "Omar",
+        "role": "Host"
+      },
+      {
+        "name": "Lina",
+        "role": "Founder, Nodebox"
+      }
+    ]
+  },
+  "scenes": [
+    {
+      "type": "split",
+      "start": 0,
+      "turns": [
+        {
+          "who": 0,
+          "start": 0,
+          "end": "we:7+0.15"
+        },
+        {
+          "who": 1,
+          "start": "w:8-0.1",
+          "end": "we:24+0.15"
+        },
+        {
+          "who": 0,
+          "start": "w:25-0.1",
+          "end": "we:34+0.15"
+        },
+        {
+          "who": 1,
+          "start": "w:35-0.1",
+          "end": 999
+        }
+      ]
+    },
+    {
+      "type": "quote",
+      "start": "w:36-0.1",
+      "text": "Talk to ten customers before you write one line of code.",
+      "who": "Lina, Founder of Nodebox",
+      "at": "w:36"
+    }
+  ],
+  "lang": "en",
+  "demoScript": "So what's the biggest mistake new founders make? Honestly, building for months before talking to a single customer. You fall in love with the idea. Right, and by the time you launch nobody wants it. Exactly. Talk to ten customers before you write one line of code."
+}

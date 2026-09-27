@@ -1,0 +1,46 @@
+{
+  "music": {
+    "mood": "acoustic"
+  },
+  "scenes": [
+    {
+      "type": "map",
+      "start": 0,
+      "title": "One day in Lisbon",
+      "seed": 11,
+      "pins": [
+        {
+          "label": "Alfama café",
+          "x": 0.75,
+          "y": 0.25,
+          "at": "w:7"
+        },
+        {
+          "label": "Time Out Market",
+          "x": 0.3,
+          "y": 0.6,
+          "at": "w:16"
+        },
+        {
+          "label": "Miradouro",
+          "x": 0.55,
+          "y": 0.85,
+          "at": "w:24"
+        }
+      ],
+      "routeAt": "w:24+0.8",
+      "routeDur": 1.6
+    },
+    {
+      "type": "place",
+      "start": "w:28-0.1",
+      "name": "Miradouro da Senhora do Monte",
+      "tag": "SUNSET",
+      "rating": 4.8,
+      "text": "The best view in the city. Get there 30 minutes early.",
+      "at": "w:28"
+    }
+  ],
+  "lang": "en",
+  "demoScript": "One perfect day in Lisbon. Start with coffee in Alfama. Walk down to the river for lunch at Time Out Market. Then catch the sunset at the Miradouro. Five stars, would do it again."
+}

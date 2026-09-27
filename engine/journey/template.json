@@ -1,0 +1,1 @@
+{"name": "journey", "title": "Journey", "category": "Storytelling", "summary": "Timeline: a track that draws itself, events that pop in as the camera travels, milestone year counters", "fonts": ["display", "body"], "captions": {"style": "pill", "maxWords": 3}, "music": {"mood": "cinematic"}, "scenes": ["timeline", "milestone", "text", "media"]}

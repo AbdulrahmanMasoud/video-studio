@@ -1,0 +1,63 @@
+{
+  "music": {
+    "mood": "ambient"
+  },
+  "scenes": [
+    {
+      "type": "terminal",
+      "start": 0,
+      "title": "~/projects — zsh",
+      "lines": [
+        {
+          "text": "npx create-app my-site",
+          "kind": "cmd",
+          "at": "w:9",
+          "end": "we:12"
+        },
+        {
+          "text": "? Project name › my-site",
+          "kind": "out",
+          "at": "w:13"
+        },
+        {
+          "text": "Installing dependencies…",
+          "kind": "out",
+          "at": "w:18"
+        },
+        {
+          "text": "added 312 packages in 3s",
+          "kind": "ok",
+          "at": "w:20"
+        },
+        {
+          "text": "npm run dev",
+          "kind": "cmd",
+          "at": "w:25",
+          "end": "we:28"
+        },
+        {
+          "text": "ready - local: http://localhost:3000",
+          "kind": "hl",
+          "at": "w:31"
+        },
+        {
+          "text": "Error: port 3000 already in use",
+          "kind": "err",
+          "at": "w:34"
+        }
+      ],
+      "zoomAt": "w:31",
+      "zoomEnd": "w:34"
+    },
+    {
+      "type": "callout",
+      "start": "w:42-0.1",
+      "kind": "ok",
+      "title": "Change the port",
+      "text": "npm run dev -- --port 3001",
+      "at": "w:42"
+    }
+  ],
+  "lang": "en",
+  "demoScript": "Want to see your whole project in one command? Run npx create app, pick a name, and it installs everything. Three seconds later, it's done. Start the dev server and you're live on localhost. If you see an error about the port, just change it. That's it."
+}

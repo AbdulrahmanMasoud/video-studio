@@ -1,0 +1,1 @@
+{"name": "workout", "title": "Workout", "category": "Fitness", "summary": "Fitness: exercise cards with live rep counter or interval ring, rest timers, finish screen", "fonts": ["display", "body"], "captions": {"style": "pill", "maxWords": 3}, "music": {"mood": "workout"}, "scenes": ["exercise", "rest", "done", "text", "media"]}

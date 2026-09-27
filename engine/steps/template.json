@@ -1,0 +1,10 @@
+{
+  "name": "steps",
+  "title": "Steps",
+  "category": "Education",
+  "summary": "Numbered tips with a progress tracker, typed prompt cards, lists and toggles",
+  "fonts": ["display", "body"],
+  "captions": {"style": "pill", "maxWords": 3},
+  "music": {"mood": "lofi"},
+  "scenes": ["hook", "count", "step", "outro", "text", "media"]
+}

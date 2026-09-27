@@ -1,0 +1,45 @@
+{
+  "music": {
+    "mood": "news"
+  },
+  "data": {
+    "channel": "TECH DAILY",
+    "ticker": [
+      "AI edits full videos from a voice note",
+      "Works in any language",
+      "Any aspect ratio",
+      "Free to try today"
+    ]
+  },
+  "scenes": [
+    {
+      "type": "headline",
+      "start": 0,
+      "label": "BREAKING NEWS",
+      "title": "AI now edits full videos from a single voice note",
+      "sub": "Here's what you need to know",
+      "at": 0.2
+    },
+    {
+      "type": "point",
+      "start": "w:22-0.1",
+      "text": "Works in any language",
+      "kicker": "KEY POINT",
+      "at": "w:22"
+    },
+    {
+      "type": "point",
+      "start": "w:28-0.1",
+      "text": "Exports in any size",
+      "at": "w:28"
+    },
+    {
+      "type": "point",
+      "start": "w:34-0.1",
+      "text": "Free to try today",
+      "at": "w:35"
+    }
+  ],
+  "lang": "en",
+  "demoScript": "Breaking news. A new AI model can now edit full videos from a single voice note. Here's what you need to know. First, it works in any language. Second, it exports in any size. And third, it's free to try today."
+}

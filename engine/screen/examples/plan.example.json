@@ -1,0 +1,49 @@
+{
+  "music": {
+    "mood": "corporate"
+  },
+  "demoMedia": {
+    "screen": "video"
+  },
+  "scenes": [
+    {
+      "type": "step",
+      "start": 0,
+      "n": 1,
+      "text": "Your first project in 30 seconds",
+      "at": 0.1
+    },
+    {
+      "type": "demo",
+      "start": "w:11-0.4",
+      "device": "browser",
+      "url": "app.example.com/projects",
+      "clicks": [
+        {
+          "x": 0.85,
+          "y": 0.06,
+          "at": "w:11",
+          "label": "New project",
+          "end": "we:17"
+        },
+        {
+          "x": 0.4,
+          "y": 0.45,
+          "at": "w:21",
+          "label": "Name it",
+          "end": "we:25",
+          "zoom": 1.4
+        },
+        {
+          "x": 0.78,
+          "y": 0.9,
+          "at": "w:28",
+          "label": "Create",
+          "end": "we:35"
+        }
+      ]
+    }
+  ],
+  "lang": "en",
+  "demoScript": "Here's how to set up your first project in thirty seconds. Click new project in the top right. Give it a name and pick a template. Then hit create, and that's it, your workspace is ready."
+}

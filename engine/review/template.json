@@ -1,0 +1,1 @@
+{"name": "review", "title": "Review", "category": "Reviews", "summary": "Product / app / place review: star score, pros and cons, and a BUY / SKIP verdict stamp", "fonts": ["display", "body"], "captions": {"style": "pill", "maxWords": 3}, "music": {"mood": "upbeat"}, "scenes": ["score", "pros", "cons", "verdict", "text", "media"]}

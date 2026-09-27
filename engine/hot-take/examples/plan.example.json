@@ -1,0 +1,59 @@
+{
+  "music": {
+    "mood": "edm",
+    "drop": "w:2"
+  },
+  "scenes": [
+    {
+      "type": "take",
+      "start": 0,
+      "kicker": "Unpopular opinion",
+      "text": "Morning routines are overrated",
+      "highlight": [
+        "overrated"
+      ],
+      "at": "w:2"
+    },
+    {
+      "type": "take",
+      "start": "w:17-0.1",
+      "kicker": "What matters",
+      "text": "Your best hours, whenever they are",
+      "highlight": [
+        "best",
+        "hours"
+      ],
+      "at": "w:17"
+    },
+    {
+      "type": "poll",
+      "start": "w:30-0.1",
+      "question": "Are morning routines overrated?",
+      "at": "w:31",
+      "options": [
+        {
+          "label": "Yes, overrated",
+          "pct": 64
+        },
+        {
+          "label": "No, they work",
+          "pct": 29
+        },
+        {
+          "label": "Depends",
+          "pct": 7
+        }
+      ],
+      "fillAt": "w:36"
+    },
+    {
+      "type": "cta",
+      "start": "w:40-0.1",
+      "text": "What do you think?",
+      "sub": "Tell me in the comments",
+      "at": "w:41"
+    }
+  ],
+  "lang": "en",
+  "demoScript": "Unpopular opinion. Morning routines are overrated. You don't need to wake up at five to be successful. What matters is what you do with your best hours, whenever they are. I asked a thousand people and most of them agreed. So what do you think? Tell me in the comments."
+}

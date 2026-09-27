@@ -1,0 +1,52 @@
+{
+  "music": {
+    "mood": "piano",
+    "drop": "w:37"
+  },
+  "scenes": [
+    {
+      "type": "chapter",
+      "start": 0,
+      "n": 1,
+      "title": "The day I quit",
+      "at": 0.1,
+      "hold": "w:10"
+    },
+    {
+      "type": "talk",
+      "start": "w:10-0.05",
+      "note": "“You're crazy.”",
+      "noteAt": "w:15"
+    },
+    {
+      "type": "photo",
+      "start": "w:26-0.05",
+      "caption": "Bye, car",
+      "at": "w:27",
+      "end": "w:37"
+    },
+    {
+      "type": "chapter",
+      "start": "w:37-0.05",
+      "n": 2,
+      "title": "One client became ten",
+      "at": "w:37",
+      "hold": "w:45"
+    },
+    {
+      "type": "talk",
+      "start": "w:45-0.05",
+      "note": "Team of 12",
+      "noteAt": "w:52"
+    },
+    {
+      "type": "end",
+      "start": "w:53-0.05",
+      "text": "Start anyway.",
+      "sub": "Scared is normal",
+      "at": "w:59"
+    }
+  ],
+  "lang": "en",
+  "demoScript": "Three years ago I quit my job with no plan. Everyone told me I was crazy. The first six months were the hardest of my life. I sold my car. I moved back in with my parents. But then one small client turned into ten. And today I run a team of twelve. So if you're scared, that's normal. Start anyway."
+}

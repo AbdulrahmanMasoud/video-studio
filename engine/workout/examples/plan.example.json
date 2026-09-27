@@ -1,0 +1,50 @@
+{
+  "music": {
+    "mood": "workout"
+  },
+  "scenes": [
+    {
+      "type": "exercise",
+      "start": 0,
+      "name": "Squats",
+      "set": "SET 1 / 3",
+      "reps": 10,
+      "repTimes": [
+        "w:3",
+        "w:4",
+        "w:5",
+        "w:6",
+        "w:7",
+        "w:8",
+        "w:9",
+        "w:10",
+        "w:11",
+        "w:12"
+      ],
+      "at": "w:2"
+    },
+    {
+      "type": "rest",
+      "start": "w:13-0.1",
+      "seconds": 15,
+      "next": "Plank",
+      "at": "w:14"
+    },
+    {
+      "type": "exercise",
+      "start": "w:22-0.1",
+      "name": "Plank",
+      "seconds": 5,
+      "at": "w:22"
+    },
+    {
+      "type": "done",
+      "start": "w:27-0.1",
+      "text": "Workout complete!",
+      "sub": "Amazing work",
+      "at": "w:28"
+    }
+  ],
+  "lang": "en",
+  "demoScript": "Ten squats. Go. One, two, three, four, five, six, seven, eight, nine, ten. Great. Rest for fifteen seconds. Next up, a plank. Hold it for twenty seconds. You're done. Amazing work."
+}

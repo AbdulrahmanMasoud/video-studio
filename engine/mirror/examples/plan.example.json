@@ -1,0 +1,52 @@
+{
+  "music": {
+    "mood": "lofi"
+  },
+  "scenes": [
+    {
+      "type": "title",
+      "start": 0,
+      "text": "Stop saying sorry",
+      "sub": "Email tip #1",
+      "at": 0.1,
+      "end": "w:6"
+    },
+    {
+      "type": "talk",
+      "start": "w:6-0.05",
+      "zooms": [
+        {
+          "at": "w:6",
+          "end": "we:6+0.2",
+          "scale": 1.35,
+          "snap": true
+        }
+      ],
+      "stickers": [
+        {
+          "text": "Sorry for the late reply",
+          "icon": "x",
+          "at": "w:7",
+          "end": "we:15",
+          "color": "alt"
+        },
+        {
+          "text": "Thank you for your patience",
+          "icon": "check",
+          "at": "w:18",
+          "end": "we:29"
+        }
+      ]
+    },
+    {
+      "type": "lower",
+      "start": "w:30-0.05",
+      "name": "Sara Adel",
+      "role": "Communication coach",
+      "at": "w:30",
+      "end": "we:40"
+    }
+  ],
+  "lang": "en",
+  "demoScript": "Stop saying sorry in your emails. Seriously. Sorry for the late reply makes you sound small. Instead, say thank you for your patience. Same message, but now you sound confident. Try it on your next email and watch how people respond."
+}

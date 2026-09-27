@@ -1,0 +1,66 @@
+{
+  "lang": "en",
+  "demoScript": "How does a startup actually grow? It starts with an idea. Then you build a tiny version. Then you get real users. And that is where growth comes from. Before you build, check three things. Is the problem real? Will people pay? Can you reach them? Remember: talk to users first.",
+  "music": {
+    "mood": "acoustic",
+    "drop": "w:10"
+  },
+  "scenes": [
+    {
+      "type": "title",
+      "start": 0,
+      "text": "How startups grow",
+      "at": 0.2,
+      "underlineAt": "w:3"
+    },
+    {
+      "type": "diagram",
+      "start": "w:6-0.1",
+      "title": "The loop",
+      "nodes": [
+        {
+          "text": "Idea",
+          "at": "w:10"
+        },
+        {
+          "text": "Tiny version",
+          "at": "w:15"
+        },
+        {
+          "text": "Real users",
+          "at": "w:20"
+        }
+      ],
+      "circle": {
+        "index": 2,
+        "at": "w:26"
+      }
+    },
+    {
+      "type": "list",
+      "start": "w:29-0.1",
+      "title": "Check first",
+      "items": [
+        {
+          "text": "Is the problem real?",
+          "at": "w:35"
+        },
+        {
+          "text": "Will people pay?",
+          "at": "w:39"
+        },
+        {
+          "text": "Can you reach them?",
+          "at": "w:42"
+        }
+      ]
+    },
+    {
+      "type": "note",
+      "start": "w:46-0.1",
+      "text": "Talk to users first",
+      "at": "w:47",
+      "circleAt": "w:49"
+    }
+  ]
+}

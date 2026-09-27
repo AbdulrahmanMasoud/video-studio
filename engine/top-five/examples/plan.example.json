@@ -1,0 +1,54 @@
+{
+  "music": {
+    "mood": "upbeat"
+  },
+  "scenes": [
+    {
+      "type": "intro",
+      "start": 0,
+      "n": 5,
+      "title": "Apps I can't live without",
+      "at": "w:0"
+    },
+    {
+      "type": "rank",
+      "start": "w:7-0.15",
+      "n": 5,
+      "title": "Notes app",
+      "subtitle": "Syncs everywhere",
+      "at": "w:8"
+    },
+    {
+      "type": "rank",
+      "start": "w:15-0.15",
+      "n": 4,
+      "title": "Password manager",
+      "at": "w:16"
+    },
+    {
+      "type": "rank",
+      "start": "w:20-0.15",
+      "n": 3,
+      "title": "Smart calendar",
+      "subtitle": "Plans itself",
+      "at": "w:21"
+    },
+    {
+      "type": "rank",
+      "start": "w:27-0.15",
+      "n": 2,
+      "title": "Focus timer",
+      "at": "w:28"
+    },
+    {
+      "type": "rank",
+      "start": "w:32-0.6",
+      "n": 1,
+      "title": "AI assistant",
+      "subtitle": "Does all of the above",
+      "at": "w:34"
+    }
+  ],
+  "lang": "en",
+  "demoScript": "Top five apps I can't live without. Number five: a notes app that syncs everywhere. Number four: a password manager. Number three: a calendar that plans itself. Number two: a focus timer. And number one: an AI assistant that does all of the above."
+}

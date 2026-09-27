@@ -1,0 +1,137 @@
+{
+  "lang": "en",
+  "music": {
+    "mood": "lofi",
+    "drop": "w:21"
+  },
+  "scenes": [
+    {
+      "type": "hook",
+      "start": 0,
+      "title": "How to write a great prompt",
+      "icon": "robot",
+      "beats": [
+        {
+          "at": "w:3",
+          "kind": "sparkle"
+        },
+        {
+          "at": "w:7",
+          "kind": "confused"
+        }
+      ]
+    },
+    {
+      "type": "count",
+      "start": "w:18-0.1",
+      "n": 4,
+      "at": "w:21",
+      "text": "things that change everything",
+      "textAt": "w:22"
+    },
+    {
+      "type": "step",
+      "start": "w:26-0.1",
+      "short": "Clear",
+      "title": "Be specific",
+      "card": {
+        "kind": "prompt",
+        "bad": {
+          "text": "Write a post",
+          "at": "w:32",
+          "end": "w:34"
+        },
+        "good": {
+          "text": "Write an Instagram post for my bakery, for people who love homemade bread",
+          "at": "w:36",
+          "end": "w:49"
+        },
+        "highlights": [
+          {
+            "text": "Instagram",
+            "at": "w:38"
+          },
+          {
+            "text": "homemade bread",
+            "at": "w:47"
+          }
+        ]
+      }
+    },
+    {
+      "type": "step",
+      "start": "w:50-0.1",
+      "short": "Context",
+      "title": "Give it context",
+      "card": {
+        "kind": "list",
+        "items": [
+          {
+            "text": "Who are you?",
+            "at": "w:54"
+          },
+          {
+            "text": "Who is it for?",
+            "at": "w:57"
+          },
+          {
+            "text": "Why?",
+            "at": "w:61"
+          }
+        ]
+      }
+    },
+    {
+      "type": "step",
+      "start": "w:63-0.1",
+      "short": "Format",
+      "title": "Name the format",
+      "card": {
+        "kind": "toggles",
+        "items": [
+          {
+            "a": "Bullets",
+            "b": "Paragraph",
+            "at": "w:68",
+            "flipAt": "w:69"
+          },
+          {
+            "a": "Short",
+            "b": "Long",
+            "at": "w:71",
+            "flipAt": "w:72"
+          },
+          {
+            "a": "Casual",
+            "b": "Formal",
+            "at": "w:74",
+            "flipAt": "w:75"
+          }
+        ]
+      }
+    },
+    {
+      "type": "step",
+      "start": "w:77-0.1",
+      "short": "Example",
+      "title": "Show an example",
+      "card": {
+        "kind": "text",
+        "text": "One example beats ten sentences",
+        "at": "w:85"
+      }
+    },
+    {
+      "type": "outro",
+      "start": "w:93-0.1",
+      "kicker": "Magic",
+      "strikeAt": "w:99",
+      "label": "A great prompt is",
+      "text": "clear words",
+      "highlight": "clear",
+      "textAt": "w:100",
+      "cta": "Save this for your next prompt"
+    }
+  ],
+  "demoScript": "AI is really smart, but it can't read your mind. The more you explain, the more it understands. So here are four things that change everything. First: be specific. Instead of saying write a post, say: write an Instagram post for my bakery, for people who love homemade bread today. Second: give it context. Who are you? Who is it for? And why? Third: tell it the format. Bullets or paragraph? Short or long? Casual or formal? Fourth: if you have an example, send it. One example saves you a lot of words. Last thing: a great prompt isn't magic. It's just clear words."
+}

@@ -1,0 +1,60 @@
+{
+  "music": {
+    "mood": "cinematic",
+    "drop": "w:14"
+  },
+  "scenes": [
+    {
+      "type": "flow",
+      "start": 0,
+      "emphasis": [
+        "nobody",
+        "save",
+        "luck"
+      ]
+    },
+    {
+      "type": "words",
+      "start": "w:14-0.1",
+      "items": [
+        {
+          "text": "Every small step",
+          "at": "w:14"
+        },
+        {
+          "text": "is a vote",
+          "at": "w:20",
+          "style": "accent"
+        },
+        {
+          "text": "for who",
+          "at": "w:23",
+          "style": "small"
+        },
+        {
+          "text": "you become",
+          "at": "w:27",
+          "style": "huge"
+        },
+        {
+          "text": "Start before",
+          "at": "w:31",
+          "clear": true
+        },
+        {
+          "text": "you are ready",
+          "at": "w:33",
+          "style": "strike",
+          "strikeAt": "w:36"
+        },
+        {
+          "text": "Start now.",
+          "at": "w:36",
+          "style": "huge"
+        }
+      ]
+    }
+  ],
+  "lang": "en",
+  "demoScript": "Nobody is coming to save you. Not your boss. Not the algorithm. Not luck. Every small step you take today is a vote for the person you want to become. So start before you are ready. Start now."
+}

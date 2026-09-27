@@ -1,0 +1,1 @@
+{"name":"top-five","title":"Top Five","category":"Entertainment","summary":"Countdown ranking with huge rank numbers, optional images, a rank tracker and a drumroll for #1","fonts":["display","body"],"captions":{"style":"pill","maxWords":3},"music":{"mood":"upbeat"},"scenes":["intro","rank","text","media"]}

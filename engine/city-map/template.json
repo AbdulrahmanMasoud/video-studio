@@ -1,0 +1,1 @@
+{"name": "city-map", "title": "City Map", "category": "Travel", "summary": "Travel / places: stylised map, dropping pins, a route that draws itself and place cards with ratings", "fonts": ["display", "body"], "captions": {"style": "pill", "maxWords": 3}, "music": {"mood": "acoustic"}, "scenes": ["map", "place", "text", "media"]}

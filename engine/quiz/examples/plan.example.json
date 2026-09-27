@@ -1,0 +1,52 @@
+{
+  "music": {
+    "mood": "game"
+  },
+  "scenes": [
+    {
+      "type": "question",
+      "start": 0,
+      "at": "w:2",
+      "q": "Which planet is the hottest?",
+      "options": [
+        {
+          "text": "Mercury",
+          "at": "w:13"
+        },
+        {
+          "text": "Venus",
+          "at": "w:14"
+        },
+        {
+          "text": "Mars",
+          "at": "w:15"
+        },
+        {
+          "text": "Jupiter",
+          "at": "w:17"
+        }
+      ],
+      "answer": 1,
+      "countdownAt": "w:22",
+      "seconds": 3,
+      "revealAt": "w:25"
+    },
+    {
+      "type": "explain",
+      "start": "w:27-0.1",
+      "title": "Thick atmosphere",
+      "text": "Venus is farther from the Sun than Mercury, but its CO2 blanket traps the heat: about 465°C.",
+      "at": "w:27",
+      "icon": "fire"
+    },
+    {
+      "type": "score",
+      "start": "w:46-0.1",
+      "total": 1,
+      "text": "Did you get it right?",
+      "at": "w:46"
+    }
+  ],
+  "lang": "en",
+  "demoScript": "Quick quiz. Which planet is the hottest in our solar system? Is it Mercury, Venus, Mars, or Jupiter? You have three seconds. Three, two, one. It's Venus! Even though Mercury is closer to the sun, Venus has a thick atmosphere that traps heat like a blanket. How many did you get right? Comment below."
+}

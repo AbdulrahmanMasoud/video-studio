@@ -1,0 +1,1 @@
+{"name":"mirror","title":"Mirror","category":"Talking head","summary":"Talking-head edit: punch-in zooms on jump cuts, pop captions, stickers, headlines and lower thirds","fonts":["display","body"],"captions":{"style":"pop","maxWords":1},"music":{"mood":"lofi"},"needsMedia":["cam"],"scenes":["talk","title","lower","text","media"]}

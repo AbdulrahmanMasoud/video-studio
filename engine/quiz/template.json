@@ -1,0 +1,1 @@
+{"name":"quiz","title":"Quiz","category":"Engagement","summary":"Question card, A/B/C/D options, countdown ring and a green reveal","fonts":["display","body"],"captions":{"style":"pill","maxWords":3},"music":{"mood":"game"},"scenes":["question","explain","score","text","media"]}

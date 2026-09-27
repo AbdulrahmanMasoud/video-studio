@@ -1,0 +1,45 @@
+{
+  "music": {
+    "mood": "tension"
+  },
+  "scenes": [
+    {
+      "type": "claim",
+      "start": 0,
+      "myth": "You only use 10% of your brain",
+      "mythAt": "w:0",
+      "stampAt": "w:16",
+      "fact": "Almost every region of your brain is active every day",
+      "factAt": "w:17"
+    },
+    {
+      "type": "reason",
+      "start": "w:30-0.1",
+      "title": "Why we know",
+      "points": [
+        {
+          "text": "Scans show activity everywhere",
+          "at": "w:30"
+        },
+        {
+          "text": "Simple tasks light up large areas",
+          "at": "w:33"
+        },
+        {
+          "text": "Damage anywhere causes problems",
+          "at": "w:38"
+        }
+      ]
+    },
+    {
+      "type": "stamp",
+      "start": "w:45-0.1",
+      "kind": "myth",
+      "text": "BUSTED",
+      "sub": "No hidden 90%",
+      "at": "w:50"
+    }
+  ],
+  "lang": "en",
+  "demoScript": "You only use ten percent of your brain. You've heard this a million times. It's a myth. Brain scans show that almost every region is active during a normal day. Even simple tasks light up large areas. And damage to almost any part causes problems. So no hidden ninety percent. Busted."
+}

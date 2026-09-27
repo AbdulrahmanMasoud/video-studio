@@ -1,0 +1,1 @@
+{"name":"chat","title":"AI Chat","category":"Tech","summary":"AI chat window: typing dots, streamed replies, reactions, auto-scroll and a result card","fonts":["display","body"],"captions":{"style":"line","maxWords":5},"music":{"mood":"lofi"},"scenes":["chat","result","text","media"]}

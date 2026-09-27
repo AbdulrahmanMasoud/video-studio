@@ -1,0 +1,44 @@
+{
+  "music": {
+    "mood": "cinematic"
+  },
+  "demoMedia": {
+    "shot1": "video"
+  },
+  "scenes": [
+    {
+      "type": "title",
+      "start": 0,
+      "kicker": "A SHORT FILM",
+      "text": "The First Light",
+      "at": 0.4
+    },
+    {
+      "type": "shot",
+      "start": "w:5-0.2",
+      "media": "shot1",
+      "kenburns": {
+        "from": 1.02,
+        "to": 1.15,
+        "x": 0.4,
+        "y": 0.4
+      }
+    },
+    {
+      "type": "chapter",
+      "start": "w:17-0.2",
+      "n": 1,
+      "title": "The people who wake it up",
+      "at": "w:17"
+    },
+    {
+      "type": "end",
+      "start": "w:34-0.2",
+      "text": "The First Light",
+      "sub": "Coming soon",
+      "at": "w:35"
+    }
+  ],
+  "lang": "en",
+  "demoScript": "Every city has a heartbeat. In the early morning, before the noise, you can almost hear it. This is the story of the people who wake it up. The bakers. The drivers. The dreamers. The first light."
+}

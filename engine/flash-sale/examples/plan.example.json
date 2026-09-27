@@ -1,0 +1,64 @@
+{
+  "music": {
+    "mood": "edm",
+    "drop": "w:4"
+  },
+  "data": {
+    "tape": "FLASH SALE • 50% OFF • 24H ONLY • "
+  },
+  "scenes": [
+    {
+      "type": "sale",
+      "start": 0,
+      "kicker": "FLASH SALE",
+      "value": 50,
+      "suffix": "%",
+      "at": "w:4",
+      "timer": {
+        "seconds": 86400
+      },
+      "fine": "Ends in 24 hours. While stocks last."
+    },
+    {
+      "type": "items",
+      "start": "w:15-0.1",
+      "currency": "$",
+      "items": [
+        {
+          "name": "Sneakers",
+          "price": 45,
+          "old": 90,
+          "at": "w:15"
+        },
+        {
+          "name": "Hoodie",
+          "price": 30,
+          "old": 60,
+          "at": "w:16"
+        },
+        {
+          "name": "Backpack",
+          "price": 25,
+          "old": 50,
+          "at": "w:17"
+        },
+        {
+          "name": "Cap",
+          "price": 10,
+          "old": 20,
+          "at": "w:18"
+        }
+      ]
+    },
+    {
+      "type": "cta",
+      "start": "w:21-0.1",
+      "text": "Use code",
+      "code": "FLASH50",
+      "sub": "At checkout",
+      "at": "w:21"
+    }
+  ],
+  "lang": "en",
+  "demoScript": "Flash sale! Everything is fifty percent off, but only for the next twenty four hours. Sneakers, hoodies, backpacks, all of it. Use code FLASH fifty at checkout. Go now."
+}

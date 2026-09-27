@@ -1,0 +1,1 @@
+{"name": "recipe", "title": "Recipe", "category": "Food", "summary": "Cooking: title with time & servings, ingredient checklist, numbered steps with a timer, final dish", "fonts": ["display", "body", "hand"], "captions": {"style": "pill", "maxWords": 3}, "music": {"mood": "jazzy"}, "scenes": ["title", "ingredients", "step", "final", "text", "media"]}

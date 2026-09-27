@@ -1,0 +1,20 @@
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+# node
+node_modules/
+.next/
+# env & secrets
+.env
+.env.*.local
+# engine / job scratch
+engine-dev/_smoke/
+jobs/
+scratch/
+*.zip
+# os
+.DS_Store

@@ -1,0 +1,1 @@
+{"name": "flash-sale", "title": "Flash Sale", "category": "Marketing", "summary": "Loud promo: shaking discount, live countdown clock, product tiles and a promo-code CTA", "fonts": ["display", "body"], "captions": {"style": "pop", "maxWords": 1}, "music": {"mood": "edm"}, "scenes": ["sale", "items", "cta", "text", "media"]}
