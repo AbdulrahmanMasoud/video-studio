@@ -67,8 +67,9 @@ its audio becomes the voice and the footage is cut with the same edit.
 - Recording or video: `VT transcribe JOB` (faster-whisper, word-level). `--model small` is faster,
   `medium` (default) is better for Arabic and other non-English speech. `--prompt "names, jargon"`
   improves spelling.
-- Script only: write it to a text file, then `VT tts JOB --text-file script.txt [--voice NAME]`
-  (edge-tts; a natural default voice is picked per language).
+- Script only: write it to a text file, then `VT tts JOB --text-file script.txt [--voice NAME] [--provider openai]`
+  (needs `TTS_PROVIDER=openai` + `OPENAI_API_KEY`; `--provider espeak` is an offline test voice). TTS writes
+  `tts.mp3` and makes it the job input; run `VT transcribe JOB` afterwards for the word timings.
 - No voice at all: skip this step and give the plan a `"duration"` in seconds.
 
 Read `transcript.txt`. Each line is `[index] word@seconds`. Low-confidence words are marked `?`.
@@ -93,6 +94,11 @@ VT edit JOB --pace tight --drop "w:40-w:43,31.2-32.0" --sections "12,57"
 
 Camera footage or images used by a template are registered with `VT media JOB --name cam`
 (defaults to `cam_edit.mp4`), `--name screen --video rec.mp4`, `--name photo --image pic.jpg`.
+Images may be JPG, PNG (alpha kept: use `--fit contain` for cut-outs), WebP or HEIC (converted, EXIF
+rotation applied and metadata stripped). Clips accept `--start S --duration D` (trim) and lose their audio
+unless `--keep-audio` is given (then it is mixed in at the scene that shows the clip). Many assets at once:
+`VT assets JOB --manifest assets.json` (list of `{name, path, description?, fit?, start?, duration?, keep_audio?}`),
+which also writes `media/index.json` (name, kind, size, duration, alpha).
 
 ## 5. Storyboard: write `JOB/plan.json`
 
@@ -135,6 +141,14 @@ VT build JOB --no-music
 
 Single steps exist for iteration: `render`, `sfx`, `music` (`--mood`, `--file song.mp3`, `--none`),
 `mix` (`--music-db`, `--sfx-db`, `--no-duck`), `mux`, `qa`.
+
+`mux` (and `build`) also take `--watermark logo.png [--watermark-pos br|bl|tr|tl|center] [--watermark-opacity 0.6]`
+and `--max-height 720` (caps the short side, i.e. 720p for both portrait and landscape). QA compares against
+the delivered size, so drafts and capped deliveries are not flagged as wrong resolution.
+
+Machine use: `VT --json <cmd>` (or `VT_JSON=1`) prints one JSON object per log line (`level`, `msg`, `progress`,
+`error_code`), `VT_OFFLINE=1` makes any network call fail fast (fonts must be pre-cached: `VT fonts --precache`),
+`init --duration-limit 600` refuses long inputs, and the CLI stops its ffmpeg/Chromium children on SIGTERM.
 
 ## 8. QA and delivery
 

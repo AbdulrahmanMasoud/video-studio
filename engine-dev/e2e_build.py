@@ -60,6 +60,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("job"); ap.add_argument("--template", default="steps"); ap.add_argument("--model", default="small")
     ap.add_argument("--size", default="9:16"); ap.add_argument("--draft", action="store_true"); ap.add_argument("--lang", default="en")
+    ap.add_argument("--watermark", help="PNG overlay (free plan)"); ap.add_argument("--max-height", type=int, help="short-side cap, e.g. 720")
     a = ap.parse_args()
     job = Path(a.job); job.mkdir(parents=True, exist_ok=True)
     voice = job / "voice.wav"
@@ -74,10 +75,11 @@ def main():
     print(f"+ {len(words)} words after edit")
     (job / "plan.json").write_text(json.dumps(make_plan(words), ensure_ascii=False, indent=2))
     vt("stills", job, "--auto")
-    vt("build", job, *(["--draft"] if a.draft else []))
+    extra = (["--draft"] if a.draft else []) + (["--watermark", a.watermark] if a.watermark else []) + (["--max-height", a.max_height] if a.max_height else [])
+    vt("build", job, *extra)
     rep = json.loads((job / "qa/report.json").read_text())
     print(json.dumps(rep, indent=2))
-    ok = Path(rep["file"]).exists() and rep["has_audio"] and rep["lufs"] is not None
+    ok = Path(rep["file"]).exists() and rep["has_audio"] and rep["lufs"] is not None and not rep["issues"]
     print("E2E", "OK" if ok else "FAILED", "| issues:", rep["issues"] or "none")
     sys.exit(0 if ok else 1)
 

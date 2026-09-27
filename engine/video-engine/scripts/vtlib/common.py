@@ -5,14 +5,21 @@ import json
 import os
 import re
 import shutil
+import signal
+import socket
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 ENGINE_DIR = Path(__file__).resolve().parents[2]          # .../skills/video-engine
 SKILLS_DIR = ENGINE_DIR.parent                              # .../skills
 RUNTIME_DIR = ENGINE_DIR / "runtime"
 CACHE_DIR = Path(os.environ.get("VT_CACHE", Path.home() / ".cache" / "video-studio"))
+# VT_OFFLINE=1: every network call fails fast instead of hanging (render must work with no network).
+OFFLINE = os.environ.get("VT_OFFLINE", "") not in ("", "0", "false", "no")
+# VT_JSON=1 (or `vt.py --json`): one JSON object per log line for machine consumers.
+JSON_LOGS = os.environ.get("VT_JSON", "") not in ("", "0", "false", "no")
 
 SIZE_PRESETS = {
     "9:16": (1080, 1920), "vertical": (1080, 1920), "portrait": (1080, 1920), "tiktok": (1080, 1920),
@@ -26,25 +33,142 @@ SIZE_PRESETS = {
 PLATFORMS = ["tiktok", "reels", "shorts", "youtube", "linkedin", "x", "none"]
 
 
-def log(*a):
-    print("[vt]", *a, flush=True)
+def set_json_logs(on: bool = True):
+    global JSON_LOGS
+    JSON_LOGS = bool(on)
 
 
-def die(msg: str, code: int = 2):
-    print(f"[vt] ERROR: {msg}", file=sys.stderr, flush=True)
+def _emit(level: str, msg: str, stream, **fields):
+    if JSON_LOGS:
+        rec = {"ts": round(time.time(), 3), "level": level, "msg": msg}
+        rec.update({k: v for k, v in fields.items() if v is not None})
+        stream.write(json.dumps(rec, ensure_ascii=False) + "\n")
+    else:
+        prefix = "[vt] ERROR: " if level == "error" else "[vt] "
+        extra = "  " + " ".join(f"{k}={v}" for k, v in fields.items() if v is not None) if fields else ""
+        stream.write(prefix + msg + extra + "\n")
+    stream.flush()
+
+
+def log(*a, **fields):
+    """Human log line, or one JSON object per line when JSON logs are on.
+
+    Keyword fields (e.g. step="render", progress=0.4) become JSON keys; in text mode they are appended.
+    """
+    _emit("info", " ".join(str(x) for x in a), sys.stdout, **fields)
+
+
+def warn(*a, **fields):
+    _emit("warning", " ".join(str(x) for x in a), sys.stdout, **fields)
+
+
+def progress(step: str, frac: float, msg: str = "", **fields):
+    """Structured progress event (0..1) for the worker; a plain line in text mode."""
+    _emit("progress", msg or step, sys.stdout, step=step, progress=round(max(0.0, min(1.0, frac)), 3), **fields)
+
+
+def die(msg: str, code: int = 2, error_code: str | None = None):
+    _emit("error", msg, sys.stderr, error_code=error_code)
     sys.exit(code)
 
 
-def run(cmd, check=True, capture=False, quiet=True):
+# Child processes started through run(); terminated on SIGTERM so the CLI stops cleanly.
+CHILDREN: set = set()
+
+
+def run(cmd, check=True, capture=False, quiet=True, timeout=None):
     """Run a command list. Raises with stderr tail on failure."""
     if isinstance(cmd, str):
         cmd = cmd.split()
-    p = subprocess.run(cmd, stdout=subprocess.PIPE if capture or quiet else None,
-                       stderr=subprocess.PIPE if capture or quiet else None, text=True)
+    cmd = [str(c) for c in cmd]
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE if capture or quiet else None,
+                         stderr=subprocess.PIPE if capture or quiet else None, text=True)
+    CHILDREN.add(p)
+    try:
+        out, err = p.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        p.kill(); p.communicate()
+        raise RuntimeError(f"Command timed out after {timeout}s: {' '.join(cmd)[:300]}")
+    finally:
+        CHILDREN.discard(p)
+    p.stdout, p.stderr = out, err  # keep the CompletedProcess-like shape callers expect
     if check and p.returncode != 0:
-        tail = (p.stderr or "")[-1500:]
-        raise RuntimeError(f"Command failed ({p.returncode}): {' '.join(map(str, cmd))[:300]}\n{tail}")
+        tail = (err or "")[-1500:]
+        raise RuntimeError(f"Command failed ({p.returncode}): {' '.join(cmd)[:300]}\n{tail}")
     return p
+
+
+def _terminate_children():
+    for p in list(CHILDREN):
+        try:
+            p.terminate()
+        except Exception:
+            pass
+    deadline = time.time() + 3
+    for p in list(CHILDREN):
+        try:
+            p.wait(timeout=max(0.05, deadline - time.time()))
+        except Exception:
+            try:
+                p.kill()
+            except Exception:
+                pass
+
+
+def install_signal_handlers():
+    """SIGTERM/SIGINT: stop child processes (ffmpeg, Chromium) and exit 143/130 without half-written files lying around
+    unnoticed. The worker enforces timeouts; this makes the CLI a good citizen when it is killed."""
+    def handler(signum, frame):
+        _emit("error", f"received signal {signum}, stopping", sys.stderr, error_code="interrupted")
+        _terminate_children()
+        raise SystemExit(128 + signum)
+    for sig in (signal.SIGTERM, signal.SIGINT):
+        try:
+            signal.signal(sig, handler)
+        except (ValueError, OSError):
+            pass  # not in the main thread
+
+
+class OfflineError(OSError):
+    pass
+
+
+def _is_local(address) -> bool:
+    if not isinstance(address, tuple) or not address:
+        return True  # AF_UNIX paths and abstract sockets
+    host = str(address[0])
+    return host in ("localhost", "127.0.0.1", "::1", "0.0.0.0", "::", "") or host.startswith("127.")
+
+
+def install_offline_guard():
+    """Make any non-loopback socket connection fail immediately (VT_OFFLINE=1).
+
+    Local connections stay allowed because Playwright talks to Chromium over loopback/pipes.
+    HF_HUB_OFFLINE keeps faster-whisper from checking the Hub for the baked-in model.
+    """
+    os.environ.setdefault("HF_HUB_OFFLINE", "1")
+    os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+    if getattr(socket.socket, "_vt_guarded", False):
+        return
+    orig_connect, orig_connect_ex = socket.socket.connect, socket.socket.connect_ex
+
+    def connect(self, address):
+        if not _is_local(address):
+            raise OfflineError(f"network disabled by VT_OFFLINE=1 (tried to reach {address[0]})")
+        return orig_connect(self, address)
+
+    def connect_ex(self, address):
+        if not _is_local(address):
+            raise OfflineError(f"network disabled by VT_OFFLINE=1 (tried to reach {address[0]})")
+        return orig_connect_ex(self, address)
+
+    socket.socket.connect = connect
+    socket.socket.connect_ex = connect_ex
+    socket.socket._vt_guarded = True
+
+
+if OFFLINE:
+    install_offline_guard()
 
 
 def parse_size(s: str | None):

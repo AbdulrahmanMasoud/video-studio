@@ -6,10 +6,11 @@ Every family listed here is open-licensed (SIL OFL / Apache) on Google Fonts.
 from __future__ import annotations
 
 import re
+import time
 import urllib.request
 from pathlib import Path
 
-from .common import CACHE_DIR, log
+from .common import CACHE_DIR, OFFLINE, OfflineError, log, warn
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
 
@@ -85,10 +86,19 @@ def script_for(lang: str) -> str:
     return LANG_SCRIPT.get(l) or LANG_SCRIPT.get(l.split("-")[0]) or "latin"
 
 
-def _fetch(url: str) -> bytes:
+def _fetch(url: str, retries: int = 3) -> bytes:
+    if OFFLINE:
+        raise OfflineError(f"VT_OFFLINE=1: refusing to download {url}")
     req = urllib.request.Request(url, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=30) as r:
-        return r.read()
+    last: Exception | None = None
+    for attempt in range(retries):
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                return r.read()
+        except Exception as e:  # transient: rate limit, reset connection
+            last = e
+            time.sleep(0.5 * (2 ** attempt))
+    raise last  # type: ignore[misc]
 
 
 def _family_css(family: str, weights: str) -> str | None:
@@ -109,22 +119,33 @@ def ensure_family(family: str, weights: str) -> str | None:
     css_file = d / "font.css"
     if css_file.exists():
         return css_file.read_text(encoding="utf-8")
+    if OFFLINE:
+        warn(f"font '{family}' is not in the cache and VT_OFFLINE=1 - using system fallback", font=family)
+        return None
     css = _family_css(family, weights)
     if not css:
-        log(f"font '{family}' unavailable (offline?) - using system fallback")
+        warn(f"font '{family}' unavailable (offline?) - using system fallback", font=family)
         return None
     d.mkdir(parents=True, exist_ok=True)
-    def repl(m):
-        url = m.group(1)
-        name = re.sub(r"[^A-Za-z0-9._-]", "_", url.rsplit("/", 1)[-1])
-        f = d / name
-        if not f.exists():
+    urls = sorted(set(re.findall(r"url\((https://[^)]+)\)", css)))
+    files = {u: d / re.sub(r"[^A-Za-z0-9._-]", "_", u.rsplit("/", 1)[-1]) for u in urls}
+    todo = [u for u, f in files.items() if not f.exists()]
+    failed = set()
+    if todo:  # CJK families come as 100+ unicode-range subsets per weight: fetch in parallel
+        from concurrent.futures import ThreadPoolExecutor
+        def get(u):
             try:
-                f.write_bytes(_fetch(url))
+                files[u].write_bytes(_fetch(u))
             except Exception:
-                return m.group(0)
-        return f"url('{f.resolve().as_uri()}')"
+                failed.add(u)
+        with ThreadPoolExecutor(max_workers=12) as ex:
+            list(ex.map(get, todo))
+    def repl(m):
+        u = m.group(1)
+        return m.group(0) if u in failed else f"url('{files[u].resolve().as_uri()}')"
     local = re.sub(r"url\((https://[^)]+)\)", repl, css)
+    if failed:
+        warn(f"font '{family}': {len(failed)} of {len(urls)} files failed to download", font=family)
     css_file.write_text(local, encoding="utf-8")
     return local
 
@@ -167,3 +188,37 @@ def resolve_fonts(lang: str, roles=None, overrides: dict | None = None):
         chain += ["'Noto Sans'", "system-ui", GENERIC[r]]
         stacks[r] = ", ".join(chain)
     return "\n".join(css_parts), stacks
+
+
+def all_scripts():
+    """Every script key the engine knows, with one representative language code each."""
+    rep = {}
+    for lang, sc in LANG_SCRIPT.items():
+        rep.setdefault(sc, lang)
+    for sc in SIMPLE:
+        rep.setdefault(sc, sc)
+    rep.setdefault("latin", "en")
+    return rep
+
+
+def precache(scripts=None, roles=None, extra_families=None):
+    """Download and cache every family used by the given scripts (default: all) for the given roles (default: all).
+
+    Run at image build time so rendering works with no network (VT_OFFLINE=1). Returns {family: ok}.
+    """
+    rep = all_scripts()
+    scripts = scripts or sorted(rep)
+    roles = roles or ROLES
+    results = {}
+    for sc in scripts:
+        lang = rep.get(sc, sc)
+        css, stacks = resolve_fonts(lang, roles)
+        for r in roles:
+            fam = stacks[r].split(",")[0].strip("' ")
+            results[fam] = bool(css) and f"'{fam}'" in stacks[r]
+        log(f"fonts for {sc} ({lang}): " + ", ".join(sorted({stacks[r].split(',')[0].strip(chr(39) + ' ') for r in roles})))
+    for fam in extra_families or []:
+        results[fam] = bool(ensure_family(fam, "400;500;700;800;900"))
+    missing = [f for f, ok in results.items() if not ok]
+    log(f"font cache: {len(results) - len(missing)} families cached under {CACHE_DIR / 'fonts'}" + (f", missing: {missing}" if missing else ""))
+    return results

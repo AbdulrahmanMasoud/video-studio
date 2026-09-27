@@ -9,10 +9,16 @@
   python vt.py tts JOB --text-file script.txt        (optional AI voice when there is no recording)
   python vt.py analyze JOB                speech map, pauses, retake candidates
   python vt.py edit JOB --pace tight --drop "w:40-w:43" --sections "12,57"
-  python vt.py media JOB --name cam --video cam_edit.mp4 | --image logo.png
+  python vt.py media JOB --name cam --video cam_edit.mp4 | --image logo.png [--fit contain] [--start 3 --duration 5] [--keep-audio]
+  python vt.py assets JOB --manifest assets.json    register many images/clips at once -> media/index.json
   python vt.py stills JOB --auto          preview frames + contact sheet (fast)
   python vt.py build JOB                  render + sfx + music + mix + mux + QA
+  python vt.py mux JOB --watermark logo.png --watermark-pos br --watermark-opacity 0.6 --max-height 720
+  python vt.py fonts --precache           download every font the templates can use (image build, offline renders)
   (render / sfx / music / mix / mux / qa also exist as single steps)
+
+Global flags (before the command): --json  one JSON object per log line (or VT_JSON=1).
+Environment: VT_OFFLINE=1 fails fast on any network call; VT_CACHE sets the font cache dir; TTS_PROVIDER selects the AI voice.
 """
 from __future__ import annotations
 
@@ -25,8 +31,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from vtlib.common import (PLATFORMS, SIZE_PRESETS, SKILLS_DIR, Job, die, has_video_stream, load_json, log, parse_size, run,  # noqa: E402
-                          save_json, which)
+from vtlib.common import (OFFLINE, PLATFORMS, SIZE_PRESETS, SKILLS_DIR, Job, die, ffprobe_duration, has_audio_stream,  # noqa: E402
+                          has_video_stream, install_signal_handlers, load_json, log, parse_size, run, save_json, set_json_logs, which)
 
 REQ = ["numpy", "scipy", "soundfile", "PIL", "playwright", "faster_whisper"]
 
@@ -47,7 +53,9 @@ def cmd_doctor(a):
         print("  ok   headless chromium")
     except Exception as e:
         print(f"  MISSING headless chromium ({str(e).splitlines()[0][:80]})"); ok = False
-    print("  optional: edge-tts " + ("ok" if importlib.util.find_spec("edge_tts") else "not installed (only needed for AI voiceover)"))
+    print("  optional: pillow-heif " + ("ok" if importlib.util.find_spec("pillow_heif") else "not installed (HEIC/HEIF assets will be rejected)"))
+    print("  optional: espeak-ng " + ("ok" if which("espeak-ng") else "not installed (only for TTS_PROVIDER=espeak test voice)"))
+    print(f"  tts provider: {os.environ.get('TTS_PROVIDER', 'none')}   offline mode: {'on' if OFFLINE else 'off'}")
     print("ALL GOOD" if ok else "Run: python vt.py setup   (and install ffmpeg with your OS package manager)")
     return 0 if ok else 1
 
@@ -76,7 +84,7 @@ def cmd_init(a):
     missing = [n for n, v in (("--template", a.template), ("--lang", a.lang), ("--size", a.size)) if not v]
     if missing:
         die("missing " + ", ".join(missing) + ". Ask the user for the video language and the dimensions/aspect ratio before starting "
-            f"(size presets: {', '.join(sorted(SIZE_PRESETS))}, or WxH, or a ratio like 9:16).")
+            f"(size presets: {', '.join(sorted(SIZE_PRESETS))}, or WxH, or a ratio like 9:16).", error_code="intake_missing")
     W, H = parse_size(a.size)
     job = Job(a.job); job.dir.mkdir(parents=True, exist_ok=True)
     job.data.update({"template": a.template, "lang": a.lang, "width": W, "height": H, "fps": a.fps, "platform": a.platform,
@@ -86,9 +94,16 @@ def cmd_init(a):
     if a.input:
         src = Path(a.input).resolve()
         if not src.exists():
-            die(f"input not found: {src}")
+            die(f"input not found: {src}", error_code="input_missing")
+        is_video = has_video_stream(src)
+        if not is_video and not has_audio_stream(src):
+            die(f"input has no audio or video stream: {src.name}", error_code="input_invalid")
+        dur = ffprobe_duration(src)
+        if a.duration_limit and dur > a.duration_limit:
+            die(f"input is {dur:.0f}s long; the limit is {a.duration_limit:.0f}s", error_code="input_too_long")
         job.data["input"] = str(src)
-        job.data["input_kind"] = "video" if has_video_stream(src) else "audio"
+        job.data["input_kind"] = "video" if is_video else "audio"
+        job.data["input_duration"] = round(dur, 3)
     if a.captions:
         job.data["captions"] = {"style": a.captions}
     brand = {}
@@ -114,7 +129,7 @@ def cmd_transcribe(a):
 def cmd_tts(a):
     from vtlib.tts import synthesize
     job = Job(a.job)
-    synthesize(job, Path(a.text_file).read_text(encoding="utf-8"), a.voice, a.rate)
+    synthesize(job, Path(a.text_file).read_text(encoding="utf-8"), a.voice, a.rate, a.provider)
 
 
 def cmd_analyze(a):
@@ -132,13 +147,34 @@ def cmd_edit(a):
 def cmd_media(a):
     from vtlib.media import add_image, add_video
     job = Job(a.job)
-    if a.image:
-        add_image(job, a.name, a.image, a.fit)
-    else:
-        src = a.video or (job.p("cam_edit.mp4") if job.p("cam_edit.mp4").exists() else job.data.get("input"))
-        if not src:
-            die("give --video or --image")
-        add_video(job, a.name, src, a.fit, a.box, None, a.start, a.duration)
+    try:
+        if a.image:
+            add_image(job, a.name, a.image, a.fit)
+        else:
+            src = a.video or (job.p("cam_edit.mp4") if job.p("cam_edit.mp4").exists() else job.data.get("input"))
+            if not src:
+                die("give --video or --image")
+            add_video(job, a.name, src, a.fit, a.box, None, a.start, a.duration, a.keep_audio, a.max_duration)
+    except (ValueError, FileNotFoundError, RuntimeError) as e:
+        die(str(e), error_code="asset_invalid")
+
+
+def cmd_assets(a):
+    from vtlib.media import register_assets
+    job = Job(a.job)
+    index = register_assets(job, Path(a.manifest), a.max_clip_seconds)
+    bad = [r for r in index if r.get("error")]
+    if bad and a.strict:
+        die(f"{len(bad)} asset(s) failed: " + "; ".join(f"{r.get('name')}: {r['error']}" for r in bad), error_code="asset_invalid")
+
+
+def cmd_fonts(a):
+    from vtlib.fonts import precache
+    if a.precache:
+        scripts = a.scripts.split(",") if a.scripts else None
+        res = precache(scripts, None, a.families.split(",") if a.families else None)
+        return 0 if all(res.values()) or not a.strict else 1
+    die("nothing to do (use --precache)")
 
 
 def cmd_render(a):
@@ -221,15 +257,32 @@ def cmd_mix(a):
     sfx = job.p("sfx.wav") if job.p("sfx.wav").exists() else None
     mix(voice, music, sfx, _duration(job), job.p("mix.wav"), job.data.get("lufs", -14),
         a.music_db if a.music_db is not None else mcfg.get("music_db", -13 if voice else -8),
-        a.sfx_db if a.sfx_db is not None else mcfg.get("sfx_db", 2), not a.no_duck)
+        a.sfx_db if a.sfx_db is not None else mcfg.get("sfx_db", 2), not a.no_duck, clips=_clip_audio(job))
+
+
+def _clip_audio(job):
+    """Audio of clips registered with --keep-audio, placed at the start of the scene that shows them."""
+    scenes = load_json(job.p("render/scenes.json"), []) or []
+    plan = (load_json(job.p("plan.json"), {}) or {}).get("scenes", [])
+    media = job.data.get("media", {})
+    out = []
+    for i, sc in enumerate(scenes):
+        ps = plan[i] if i < len(plan) else {}
+        name = ps.get("media") if isinstance(ps, dict) else None
+        m = media.get(name) if name else None
+        if m and m.get("audio") and Path(m["audio"]).exists():
+            out.append((m["audio"], float(sc["start"]), float(sc["end"]) - float(sc["start"])))
+    return out
 
 
 def cmd_mux(a):
     from vtlib.mix import mux
     job = Job(a.job)
     out = Path(a.out) if a.out else job.p(job.data.get("output", "final.mp4"))
-    mux(job.p("video_noaudio.mp4"), job.p("mix.wav"), out)
-    job.data["final"] = str(out); job.save()
+    size = job.data.get("output_size") or list(job.size)
+    _, final_size = mux(job.p("video_noaudio.mp4"), job.p("mix.wav"), out, a.watermark, a.watermark_pos, a.watermark_opacity,
+                        a.watermark_scale, a.max_height, tuple(size))
+    job.data["final"] = str(out); job.data["output_size"] = list(final_size); job.save()
 
 
 def cmd_qa(a):
@@ -241,11 +294,12 @@ def cmd_qa(a):
 def cmd_build(a):
     a.gain = 0.0; a.mood = None; a.bpm = None; a.drop = None; a.end = None; a.stops = None; a.file = None
     a.music_db = None; a.sfx_db = None; a.no_duck = False; a.none = a.no_music
-    cmd_render(a); cmd_sfx(a); cmd_music(a); cmd_mix(a); cmd_mux(a); cmd_qa(a)
+    cmd_render(a); a.out = None; cmd_sfx(a); cmd_music(a); cmd_mix(a); cmd_mux(a); cmd_qa(a)
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--json", action="store_true", help="one JSON object per log line (also VT_JSON=1)")
     sp = ap.add_subparsers(dest="cmd", required=True)
     s = sp.add_parser("doctor"); s.set_defaults(fn=cmd_doctor)
     s = sp.add_parser("setup"); s.add_argument("--model", default=None, help="pre-download a whisper model (e.g. medium)")
@@ -256,23 +310,35 @@ def main():
     s.add_argument("--lufs", type=float, default=-14.0); s.add_argument("--numerals", default="auto", choices=["auto", "latin", "native"])
     s.add_argument("--dir", choices=["ltr", "rtl"]); s.add_argument("--captions", help="pill|karaoke|pop|line|boxed|none")
     s.add_argument("--palette", help='JSON brand colors, e.g. {"bg":"#101820","accent":"#FEE715"}'); s.add_argument("--fonts", help='JSON, e.g. {"display":"Sora"}')
+    s.add_argument("--duration-limit", type=float, help="refuse inputs longer than this many seconds")
     s.set_defaults(fn=cmd_init)
     s = sp.add_parser("transcribe"); s.add_argument("job"); s.add_argument("--model", default="medium"); s.add_argument("--lang"); s.add_argument("--prompt")
     s.set_defaults(fn=cmd_transcribe)
     s = sp.add_parser("tts"); s.add_argument("job"); s.add_argument("--text-file", required=True); s.add_argument("--voice"); s.add_argument("--rate", default="+0%")
-    s.set_defaults(fn=cmd_tts)
+    s.add_argument("--provider", help="openai | espeak (default: env TTS_PROVIDER)"); s.set_defaults(fn=cmd_tts)
     s = sp.add_parser("analyze"); s.add_argument("job"); s.set_defaults(fn=cmd_analyze)
     s = sp.add_parser("edit"); s.add_argument("job"); s.add_argument("--pace", default="tight", choices=["tight", "natural", "relaxed", "none"])
     s.add_argument("--drop", help="ranges to remove: 'w:12-w:15,31.2-32.0'"); s.add_argument("--sections", help="word indices that start a new section")
     s.add_argument("--voice-lufs", type=float, default=-16.0); s.set_defaults(fn=cmd_edit)
     s = sp.add_parser("media"); s.add_argument("job"); s.add_argument("--name", required=True); s.add_argument("--video"); s.add_argument("--image")
     s.add_argument("--fit", default="cover", choices=["cover", "contain"]); s.add_argument("--box"); s.add_argument("--start", type=float, default=0.0)
-    s.add_argument("--duration", type=float); s.set_defaults(fn=cmd_media)
+    s.add_argument("--duration", type=float); s.add_argument("--max-duration", type=float, help="cap clip length (seconds)")
+    s.add_argument("--keep-audio", action="store_true", help="keep the clip's audio and mix it in at its scene"); s.set_defaults(fn=cmd_media)
+    s = sp.add_parser("assets"); s.add_argument("job"); s.add_argument("--manifest", required=True, help="JSON list of {name, path, kind?, description?, fit?, start?, duration?, keep_audio?}")
+    s.add_argument("--max-clip-seconds", type=float, default=60.0); s.add_argument("--strict", action="store_true", help="exit 2 if any asset fails")
+    s.set_defaults(fn=cmd_assets)
+    s = sp.add_parser("fonts"); s.add_argument("--precache", action="store_true"); s.add_argument("--scripts", help="comma list of script keys (default all)")
+    s.add_argument("--families", help="extra Google Fonts families to cache, comma separated"); s.add_argument("--strict", action="store_true")
+    s.set_defaults(fn=cmd_fonts)
+    def mux_opts(s):
+        s.add_argument("--watermark", help="PNG overlay for the free plan"); s.add_argument("--watermark-pos", default="br", choices=["br", "bl", "tr", "tl", "center"])
+        s.add_argument("--watermark-opacity", type=float, default=0.6); s.add_argument("--watermark-scale", type=float, default=0.18, help="watermark width as a fraction of the short side")
+        s.add_argument("--max-height", type=int, help="cap the short side of the delivered video (e.g. 720 for the free plan)")
     for name, fn in (("render", cmd_render), ("build", cmd_build)):
         s = sp.add_parser(name); s.add_argument("job"); s.add_argument("--workers", type=int); s.add_argument("--draft", action="store_true")
         s.add_argument("--scale", type=float, default=1.0); s.add_argument("--out"); s.add_argument("--start", type=float); s.add_argument("--end", type=float)
         if name == "build":
-            s.add_argument("--no-music", action="store_true")
+            s.add_argument("--no-music", action="store_true"); mux_opts(s)
         s.set_defaults(fn=fn)
     s = sp.add_parser("stills"); s.add_argument("job"); s.add_argument("--times"); s.add_argument("--auto", action="store_true")
     s.add_argument("--scale", type=float, default=0.5); s.set_defaults(fn=cmd_stills)
@@ -281,10 +347,16 @@ def main():
     s.add_argument("--end"); s.add_argument("--stops"); s.add_argument("--file"); s.add_argument("--none", action="store_true"); s.set_defaults(fn=cmd_music)
     s = sp.add_parser("mix"); s.add_argument("job"); s.add_argument("--music-db", type=float); s.add_argument("--sfx-db", type=float)
     s.add_argument("--no-duck", action="store_true"); s.set_defaults(fn=cmd_mix)
-    s = sp.add_parser("mux"); s.add_argument("job"); s.add_argument("--out"); s.set_defaults(fn=cmd_mux)
+    s = sp.add_parser("mux"); s.add_argument("job"); s.add_argument("--out"); mux_opts(s); s.set_defaults(fn=cmd_mux)
     s = sp.add_parser("qa"); s.add_argument("job"); s.set_defaults(fn=cmd_qa)
     a = ap.parse_args()
-    r = a.fn(a)
+    if a.json:
+        set_json_logs(True)
+    install_signal_handlers()
+    try:
+        r = a.fn(a)
+    except (RuntimeError, ValueError, FileNotFoundError) as e:
+        die(str(e), 1, error_code="step_failed")
     sys.exit(r if isinstance(r, int) else 0)
 
 

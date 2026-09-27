@@ -3,7 +3,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .common import log, run, save_json
+import os
+
+from .common import OFFLINE, log, run, save_json
 
 
 def to_wav16(src, dst):
@@ -20,10 +22,13 @@ def transcribe(audio: Path, lang: str | None, model: str = "medium", prompt: str
     wav = Path(out_words).with_name("_asr16.wav")
     to_wav16(audio, wav)
     compute = "int8"
+    if OFFLINE:
+        os.environ.setdefault("HF_HUB_OFFLINE", "1")
+    kw = {"local_files_only": True} if OFFLINE or os.environ.get("HF_HUB_OFFLINE") == "1" else {}
     try:
-        m = WhisperModel(model, device=device if device != "auto" else "auto", compute_type=compute)
+        m = WhisperModel(model, device=device if device != "auto" else "auto", compute_type=compute, **kw)
     except Exception:
-        m = WhisperModel(model, device="cpu", compute_type="int8")
+        m = WhisperModel(model, device="cpu", compute_type="int8", **kw)
     log(f"transcribing with whisper-{model} (lang={lang or 'auto'}) ...")
     segs, info = m.transcribe(str(wav), language=(lang.split("-")[0] if lang else None), word_timestamps=True, beam_size=5,
                               vad_filter=False, condition_on_previous_text=False, initial_prompt=prompt)

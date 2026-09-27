@@ -27,7 +27,8 @@ def prepare_music_file(src, duration, out):
     return out
 
 
-def mix(voice, music, sfx, duration, out, lufs=-14.0, music_db=-13.0, sfx_db=2.0, duck=True):
+def mix(voice, music, sfx, duration, out, lufs=-14.0, music_db=-13.0, sfx_db=2.0, duck=True, clips=None, clip_db=-6.0):
+    """clips: [(wav_path, start_seconds, max_seconds)] audio of b-roll clips kept with `media --keep-audio`."""
     inputs, filt, labels = [], [], []
     idx = 0
     if voice:
@@ -48,20 +49,74 @@ def mix(voice, music, sfx, duration, out, lufs=-14.0, music_db=-13.0, sfx_db=2.0
     if sfx:
         inputs += ["-i", str(sfx)]
         filt.append(f"[{idx}:a]volume={sfx_db}dB[s]"); labels.append("[s]"); idx += 1
+    for k, (cpath, cstart, cmax) in enumerate(clips or []):
+        inputs += ["-i", str(cpath)]
+        ms = int(max(0.0, cstart) * 1000)
+        filt.append(f"[{idx}:a]aformat=channel_layouts=stereo,atrim=0:{max(0.1, cmax):.3f},adelay={ms}|{ms},volume={clip_db}dB[c{k}]")
+        labels.append(f"[c{k}]"); idx += 1
     if not labels:
         raise SystemExit("Nothing to mix (no voice, music or sfx).")
-    filt.append(f"{''.join(labels)}amix=inputs={len(labels)}:normalize=0:duration=longest,atrim=0:{duration},loudnorm=I={lufs}:TP=-1.2:LRA=9[out]")
+    filt.append(f"{''.join(labels)}amix=inputs={len(labels)}:normalize=0:duration=longest,atrim=0:{duration},loudnorm=I={lufs}:TP=-1.5:LRA=9[out]")
     run(["ffmpeg", "-y", "-v", "error", *inputs, "-filter_complex", ";".join(filt), "-map", "[out]", "-ar", "48000", str(out)])
     I, TP = loudness(out)
     log(f"mix -> {Path(out).name}: {I} LUFS, true peak {TP} dBFS")
     return out
 
 
-def mux(video, audio, out):
-    run(["ffmpeg", "-y", "-v", "error", "-i", str(video), "-i", str(audio), "-map", "0:v", "-map", "1:a", "-c:v", "copy",
-         "-c:a", "aac", "-b:a", "256k", "-movflags", "+faststart", "-shortest", str(out)])
-    log(f"final -> {out}")
-    return out
+WM_POS = {  # watermark corner -> overlay x:y expressions (m = margin in px)
+    "br": "W-w-{m}:H-h-{m}", "bl": "{m}:H-h-{m}", "tr": "W-w-{m}:{m}", "tl": "{m}:{m}", "center": "(W-w)/2:(H-h)/2",
+}
+
+
+def output_size(width, height, max_short=None):
+    """Downscale so the short side is at most max_short px (720 -> 1280x720 or 720x1280). Even dimensions."""
+    if not max_short or min(width, height) <= max_short:
+        return int(width), int(height)
+    k = max_short / min(width, height)
+    w, h = int(round(width * k)), int(round(height * k))
+    return w - w % 2, h - h % 2
+
+
+def mux(video, audio, out, watermark=None, watermark_pos="br", watermark_opacity=0.6, watermark_scale=0.18, max_height=None, size=None):
+    """Mux picture + mix into an MP4. Optional PNG watermark overlay and a short-side cap (free plan).
+
+    `max_height` caps the frame's short side ("720p" semantics for both portrait and landscape).
+    `size` is the (w, h) of `video`; probed when omitted.
+    """
+    if size is None:
+        size = probe_size(video)
+    W, H = size
+    ow, oh = output_size(W, H, max_height)
+    filters, inputs = [], ["-i", str(video), "-i", str(audio)]
+    label = "0:v"
+    if (ow, oh) != (W, H):
+        filters.append(f"[{label}]scale={ow}:{oh}:flags=lanczos[scaled]"); label = "scaled"
+    if watermark:
+        wm = Path(watermark)
+        if not wm.exists():
+            raise FileNotFoundError(f"watermark not found: {wm}")
+        inputs += ["-i", str(wm)]
+        margin = max(8, int(round(min(ow, oh) * 0.03)))
+        wm_w = max(16, int(round(min(ow, oh) * float(watermark_scale))))
+        pos = WM_POS.get(watermark_pos, WM_POS["br"]).format(m=margin)
+        filters.append(f"[2:v]format=rgba,scale={wm_w}:-1:flags=lanczos,colorchannelmixer=aa={float(watermark_opacity)}[wm]")
+        filters.append(f"[{label}][wm]overlay={pos}:format=auto[marked]"); label = "marked"
+    cmd = ["ffmpeg", "-y", "-v", "error", *inputs]
+    if filters:
+        cmd += ["-filter_complex", ";".join(filters), "-map", f"[{label}]", "-map", "1:a",
+                "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p"]
+    else:
+        cmd += ["-map", "0:v", "-map", "1:a", "-c:v", "copy"]
+    cmd += ["-c:a", "aac", "-b:a", "256k", "-movflags", "+faststart", "-shortest", str(out)]
+    run(cmd)
+    log(f"final -> {out}" + (f" ({ow}x{oh})" if (ow, oh) != (W, H) else "") + (" +watermark" if watermark else ""))
+    return out, (ow, oh)
+
+
+def probe_size(path):
+    p = run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "csv=p=0", str(path)], capture=True)
+    w, h = p.stdout.strip().split(",")[:2]
+    return int(w), int(h)
 
 
 def qa(job, final):
@@ -75,9 +130,14 @@ def qa(job, final):
                 "size_mb": round(int(info["format"]["size"]) / 1e6, 2), "has_audio": has_audio_stream(final)})
     rep["lufs"], rep["true_peak"] = loudness(final) if rep["has_audio"] else (None, None)
     W, H = job.size
+    # The expected delivery size differs from the requested one for drafts (render scale) and the free plan (max_height).
+    exp = job.data.get("output_size") or [W, H]
+    rep["expected_width"], rep["expected_height"] = int(exp[0]), int(exp[1])
     issues = []
-    if (rep["width"], rep["height"]) != (W, H):
-        issues.append(f"resolution {rep['width']}x{rep['height']} != requested {W}x{H}")
+    if (rep["width"], rep["height"]) != (int(exp[0]), int(exp[1])):
+        issues.append(f"resolution {rep['width']}x{rep['height']} != expected {exp[0]}x{exp[1]}")
+    if (int(exp[0]), int(exp[1])) != (W, H):
+        rep["note"] = f"delivered at {exp[0]}x{exp[1]} (requested {W}x{H}; draft render or plan resolution cap)"
     if rep["lufs"] is not None and abs(rep["lufs"] - job.data.get("lufs", -14)) > 1.5:
         issues.append(f"loudness {rep['lufs']} LUFS is off target")
     if rep["true_peak"] is not None and rep["true_peak"] > -0.5:

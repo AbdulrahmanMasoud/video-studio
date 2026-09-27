@@ -8,7 +8,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from .common import RUNTIME_DIR, die, load_json, log, run, save_json
+from .common import RUNTIME_DIR, die, load_json, log, progress, run, save_json, warn
 from .fonts import resolve_fonts
 from .media import audio_levels
 
@@ -84,11 +84,11 @@ async def _render_range(browser, page_file, cfg, scale, f0, f1, out, fps, label)
         enc.stdin.write(buf)
         if (i - f0) % 150 == 0:
             el = time.time() - t0
-            log(f"{label}: frame {i - f0}/{f1 - f0}  ({(i - f0) / el if el > 0 else 0:.1f} fps)")
+            progress("render", (i - f0) / max(1, f1 - f0), f"{label}: frame {i - f0}/{f1 - f0}  ({(i - f0) / el if el > 0 else 0:.1f} fps)", worker=label)
     enc.stdin.close(); enc.wait()
     await pg.close()
     if errors:
-        log(f"{label}: browser reported: " + " | ".join(errors[-3:]))
+        warn(f"{label}: browser reported: " + " | ".join(errors[-3:]), browser_errors=len(errors))
 
 
 async def _main(job, workers, scale, out, start, end, stills):
@@ -99,13 +99,17 @@ async def _main(job, workers, scale, out, start, end, stills):
         browser = await p.chromium.launch(args=["--allow-file-access-from-files", "--disable-web-security", "--font-render-hinting=none", "--disable-gpu"])
         pg, info, errors = await _open(browser, page_file, cfg, scale)
         if errors:
-            log("browser: " + " | ".join(errors[-5:]))
+            warn("browser: " + " | ".join(errors[-5:]), browser_errors=len(errors))
         save_json(job.p("cues.json"), info["cues"])
         save_json(job.p("render/scenes.json"), info["scenes"])
         for w in info.get("warnings", []):
-            log("warning: " + w)
+            warn(w)
         dur, fps = info["duration"], cfg["fps"]
-        job.data["duration"] = dur; job.save()
+        job.data["duration"] = dur
+        if stills is None:
+            job.data["render_scale"] = scale
+            job.data["output_size"] = [int(cfg["width"] * scale), int(cfg["height"] * scale)]
+        job.save()
         if stills is not None:
             qa = job.p("qa"); qa.mkdir(exist_ok=True)
             if stills == "auto":
@@ -143,7 +147,7 @@ async def _main(job, workers, scale, out, start, end, stills):
     lst = job.p("render/parts.txt")
     lst.write_text("".join(f"file '{p.resolve()}'\n" for p in parts), encoding="utf-8")
     run(["ffmpeg", "-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", str(lst), "-c", "copy", str(out)])
-    log(f"video (no audio) -> {out}")
+    progress("render", 1.0, f"video (no audio) -> {out}")
 
 
 def render(job, workers=None, scale=1.0, out=None, start=None, end=None, stills=None):

@@ -1,0 +1,47 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  worker:
+    name: worker image · engine smoke · pytest
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build worker image (small whisper, all fonts)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/docker/worker.Dockerfile
+          build-args: |
+            WHISPER_MODEL=small
+          tags: vs-worker:ci
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Engine doctor
+        run: docker run --rm vs-worker:ci python3 /app/engine/video-engine/scripts/vt.py doctor
+      - name: Lint (ruff, mypy)
+        run: docker run --rm vs-worker:ci sh -c "cd /app/apps/worker && ruff check . && mypy vs_worker"
+      - name: Engine smoke test (all templates, 9:16 + 16:9, offline)
+        run: |
+          mkdir -p engine-dev/_smoke
+          docker run --rm --shm-size=1g -e VT_OFFLINE=1 -v "$PWD/engine-dev/_smoke:/out" vs-worker:ci \
+            python3 /app/engine-dev/smoke.py --sizes 9:16,16:9 --out /out
+      - name: pytest apps/worker
+        run: docker run --rm --shm-size=1g -e WHISPER_MODEL=small vs-worker:ci python -m pytest /app/apps/worker -q --timeout=1800
+      - name: Upload contact sheets
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-sheets
+          path: engine-dev/_smoke/sheet_*.jpg
+          if-no-files-found: ignore

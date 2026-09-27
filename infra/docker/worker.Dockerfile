@@ -1,7 +1,9 @@
-# Worker image: runs the Video Studio engine CLI (vt.py) and, later, the RQ worker.
-# Phase 0: throwaway build used to verify the engine inside Docker.
-ARG WHISPER_MODEL=small
-FROM python:3.12-slim-bookworm AS base
+# Worker image: the Video Studio engine CLI (vt.py) + the RQ worker package (apps/worker).
+#   docker build -f infra/docker/worker.Dockerfile --build-arg WHISPER_MODEL=medium -t vs-worker .
+# Build args: WHISPER_MODEL (small for tests/CI, medium for prod), INSTALL_DEV (1 = pytest/ruff/mypy),
+#             FONT_SCRIPTS (comma list of script keys to pre-cache; empty = all).
+ARG PYTHON_IMAGE=python:3.12-slim-bookworm
+FROM ${PYTHON_IMAGE} AS base
 ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
     VT_CACHE=/cache/video-studio HF_HOME=/cache/huggingface
@@ -9,17 +11,38 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       ffmpeg espeak-ng ca-certificates curl tini fonts-noto-core \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY engine/video-engine/scripts/requirements.txt /tmp/engine-requirements.txt
-RUN pip install -r /tmp/engine-requirements.txt \
+
+# 1) pinned Python deps (engine + worker; compiled with `uv pip compile`), then Playwright's Chromium
+COPY apps/worker/requirements.txt /tmp/requirements.txt
+RUN pip install -r /tmp/requirements.txt \
     && python -m playwright install --with-deps chromium \
     && rm -rf /var/lib/apt/lists/*
-# Bake the whisper model into the image (small for tests, medium for prod).
-ARG WHISPER_MODEL
+
+# 2) bake the whisper model
+ARG WHISPER_MODEL=small
 RUN python -c "from faster_whisper import WhisperModel; WhisperModel('${WHISPER_MODEL}', device='cpu', compute_type='int8')" \
     && echo "whisper ${WHISPER_MODEL} cached"
+ENV WHISPER_MODEL=${WHISPER_MODEL}
+
+# 3) pre-cache Google Fonts for every script/role so rendering works with VT_OFFLINE=1.
+#    Only fonts.py/common.py are copied here, so the (slow, network-bound) layer survives other engine edits.
+ARG FONT_SCRIPTS=
+COPY engine/video-engine/scripts/vtlib/common.py engine/video-engine/scripts/vtlib/fonts.py /tmp/vtlib/vtlib/
+RUN touch /tmp/vtlib/vtlib/__init__.py \
+    && cd /tmp/vtlib && FS="${FONT_SCRIPTS}" python3 -c "from vtlib.fonts import precache; import os; s=os.environ.get('FS') or None; precache(s.split(',') if s else None)" \
+    && du -sh /cache/video-studio/fonts && rm -rf /tmp/vtlib
+
+# 4) engine + dev tools
 COPY engine /app/engine
 COPY engine-dev /app/engine-dev
-# non-root user; cache dirs writable
+
+# 5) worker package
+COPY apps/worker /app/apps/worker
+COPY packages/shared /app/packages/shared
+RUN pip install --no-deps -e /app/apps/worker
+
+# runtime: non-root, offline by default for the Hub, network guard is set per step by the pipeline
+ENV HF_HUB_OFFLINE=1 PYTHONPATH=/app/engine/video-engine/scripts
 RUN useradd -m -u 10001 worker && mkdir -p /cache /jobs && chown -R worker:worker /cache /jobs /app /ms-playwright
 USER worker
 ENTRYPOINT ["/usr/bin/tini", "--"]

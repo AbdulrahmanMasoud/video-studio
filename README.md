@@ -11,18 +11,28 @@ decisions and progress.
 
 ## Status
 
-Phase 0 (engine verified inside Docker) is complete. See `docs/PROGRESS.md`.
+Phase 0 (engine verified inside Docker) and Phase 1 (engine productisation + worker pipeline) are done.
+See `docs/PROGRESS.md` for what was tested and what is open, `CHANGELOG.md` for the change list.
 
-## Quick engine check (Phase 0)
+## Developer workflow (everything runs in Docker)
 
 ```bash
-docker build -f infra/docker/worker.Dockerfile -t vs-worker:dev .          # WHISPER_MODEL=small by default
-docker run --rm vs-worker:dev python3 /app/engine/video-engine/scripts/vt.py doctor
-docker run --rm vs-worker:dev python3 /app/engine/video-engine/scripts/vt.py templates
-docker run --rm --shm-size=1g -v "$PWD/engine-dev/_smoke:/out" vs-worker:dev \
-    python3 /app/engine-dev/smoke.py steps quiz --sizes 9:16,16:9 --out /out
-docker run --rm --shm-size=1g -v "$PWD/jobs:/jobs" vs-worker:dev \
-    python3 /app/engine-dev/e2e_build.py /jobs/smoke --draft                  # espeak → whisper → edit → plan → build
+make worker-image                 # build vs-worker:dev (WHISPER_MODEL=small; pass WHISPER_MODEL=medium for prod)
+make test-worker                  # pytest apps/worker inside the image (engine CLI, assets, planner, mux, TTS, full pipeline)
+make smoke                        # engine stills smoke test for a few templates, offline
+make smoke-all                    # all 24 templates at 9:16 + 16:9, offline (what CI runs)
+make e2e                          # LLM-free espeak → whisper → edit → plan → build --draft into ./jobs/smoke
+make lint-worker                  # ruff + mypy
+```
+
+Engine CLI cheatsheet (inside the image, `python3 /app/engine/video-engine/scripts/vt.py …`):
+
+```bash
+vt.py --json init JOB --template steps --lang en --size 9:16 --input voice.m4a --duration-limit 600
+vt.py transcribe JOB --model small && vt.py analyze JOB && vt.py edit JOB
+vt.py assets JOB --manifest assets.json           # HEIC/WebP/PNG(alpha)/clips → media/index.json
+vt.py stills JOB --auto                           # validator + contact sheet
+VT_OFFLINE=1 vt.py build JOB --draft --watermark packages/shared/assets/watermark.png --max-height 720
 ```
 
 ## Layout

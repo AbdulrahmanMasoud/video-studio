@@ -29,7 +29,8 @@ template's SKILL.md lists the label keys. Translate them in the plan:
 ```
 
 ## AI voice (TTS)
-`vt.py tts` uses edge-tts with a natural default voice per language, e.g. `ar` → `ar-EG-SalmaNeural`,
-`en` → `en-US-AriaNeural`, `es` → `es-ES-ElviraNeural`, `hi` → `hi-IN-SwaraNeural`,
-`ja` → `ja-JP-NanamiNeural`. Pick any other voice with `--voice` (list: `edge-tts --list-voices`),
-speed with `--rate +10%`. Requires internet.
+`vt.py tts` goes through a `TTSProvider` (`vtlib/tts.py`). Providers are chosen with `TTS_PROVIDER` or
+`--provider`: `openai` (OpenAI text-to-speech, needs `OPENAI_API_KEY`; model `TTS_OPENAI_MODEL`, default
+voice `TTS_OPENAI_VOICE`, speed `--rate +10%`) and `espeak` (offline espeak-ng, tests only). The default is
+`none`: the command refuses with `tts_disabled`. TTS writes `tts.mp3`; word timings then come from
+`vt.py transcribe` on that file, so captions and anchors work exactly like with a human recording.

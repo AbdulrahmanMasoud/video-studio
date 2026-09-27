@@ -1,0 +1,54 @@
+[project]
+name = "vs-worker"
+version = "0.1.0"
+description = "VideoStudio worker: runs the video engine end to end (pipeline, planner, providers)."
+requires-python = ">=3.12"
+license = "MIT"
+dependencies = [
+    # engine runtime (mirrors engine/video-engine/scripts/requirements.txt)
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "soundfile>=0.12",
+    "Pillow>=10.3",
+    "playwright>=1.45",
+    "faster-whisper>=1.0",
+    # worker
+    "pydantic>=2.7",
+    "pillow-heif>=0.16",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2",
+    "pytest-timeout>=2.3",
+    "ruff>=0.5",
+    "mypy>=1.10",
+]
+
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["vs_worker"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+timeout = 1800
+markers = [
+    "slow: full pipeline runs (whisper + render); skipped with -m 'not slow'",
+    "network: needs internet (skipped when VT_OFFLINE=1)",
+]
+
+[tool.ruff]
+line-length = 160
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E702", "E741"]  # compact one-liners and short math names are house style in this repo
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+check_untyped_defs = true
