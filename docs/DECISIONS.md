@@ -74,3 +74,26 @@ source of requirements; this file records the defaults we picked where the brief
 26. **The font pre-cache layer is strict.** `ensure_family` no longer writes `font.css` for a family with missing subset files, and the
     Dockerfile step exits non-zero when any family is incomplete. Why: an overnight build lost DNS mid-download, Docker cached the
     "successful" but degraded layer, and every later build would have shipped it silently.
+
+## 2026-09-28 — Phase 3
+
+27. **Presigned POST, not PUT.** A presigned PUT cannot enforce size; a POST policy carries `content-length-range` and the content type,
+    which is what §5.10 asks for. The browser sends a multipart form (`url` + `fields` + file). Uploads use a fresh folder id per upload
+    (`inputs/{user}/{uuid}/…`) because the project id does not exist before the file is uploaded.
+28. **The worker shares `vs_api.core` (models, storage, credits, state, queue, email, LLM settings)** and the worker image installs the API
+    package with `--no-deps`. One implementation of the credit ledger and the state machine is used from both sides (`Session.run_sync` in
+    the API). LLM routing moved to `vs_api.core.llm_settings`; `vs_worker.llm.settings` re-exports it so the admin endpoint needs no worker code.
+29. **SSE polls the database** (one query per second per open stream, heartbeat every 15 s, ends on done/failed). No pub/sub layer is needed at
+    this scale, and `job_events` is the source of truth anyway.
+30. **The job folder stays on the `jobs` volume between preview and render** (deleted after `done`). If it is gone (volume lost, worker replaced)
+    the render task rebuilds it by re-running the preview stage with the stored plan (`_StoredPlan`), so nothing depends on a specific worker.
+31. **Edits are queue jobs on `plan`** (status `preview_ready → planning → preview_ready`); a rejected edit keeps the last good plan and records
+    the reason in `job_events`. Enqueueing needs no worker, which keeps the API unit tests worker-free.
+32. **Cookie sessions need a CSRF header, bearer tokens do not.** Both are accepted; the web app uses cookies (+ `X-CSRF-Token`), tests and
+    scripts use `Authorization: Bearer`. Email verification is enforced only when `APP_ENV=prod`.
+33. **Coverage must be greenlet-aware** (`[tool.coverage.run] concurrency = ["greenlet", "thread"]`): asyncpg switches greenlets on every
+    query and coverage otherwise stops tracing a coroutine after its first query, which made tested routers look untested (51 % → 96 %).
+34. **MinIO is published on host ports 9100/9101** because 9000 is commonly taken (it was, here). Presigned URLs use `S3_PUBLIC_ENDPOINT_URL`;
+    inside the network tests keep the signed `Host` header while talking to `minio:9000`.
+35. **The integration test talks to the live API container over HTTP** (same database and queue as the running worker); the unit tests use
+    the in-process app against the `videostudio_test` database created by `infra/postgres/init-test-db.sh`.

@@ -4,7 +4,7 @@ WHISPER_MODEL ?= small
 SHM ?= 1g
 JOBS ?= $(PWD)/jobs
 
-.PHONY: help worker-image test-worker smoke smoke-all e2e lint-worker plan-run providers
+.PHONY: help worker-image test-worker smoke smoke-all e2e lint-worker plan-run providers up down logs build migrate seed test-api test-api-integration lint-api test
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-16s %s\n", $$1, $$2}'
@@ -45,3 +45,42 @@ plan-run: ## run a job with the LLM planner: make plan-run INPUT=voice.m4a TEMPL
 
 providers: ## show which LLM providers have credentials and the current routing
 	docker run --rm $(LLM_ENV) $(WORKER_IMAGE) python -m vs_worker.cli providers
+
+# ---- full stack -------------------------------------------------------------------------------------
+COMPOSE ?= docker compose
+
+up: ## build and start the whole stack (postgres, redis, minio, mailpit, api, worker)
+	@test -f .env || cp .env.example .env
+	$(COMPOSE) up -d --build
+	@echo "API http://localhost:8000/docs · MinIO console http://localhost:9101 · Mailpit http://localhost:8025"
+
+down: ## stop the stack (keeps volumes)
+	$(COMPOSE) down
+
+logs: ## follow api + worker logs
+	$(COMPOSE) logs -f api worker
+
+build: ## build api + worker images
+	$(COMPOSE) build
+
+migrate: ## run alembic migrations (api container)
+	$(COMPOSE) run --rm --no-deps api alembic upgrade head
+
+seed: ## create an admin-granted demo user (dev only)
+	$(COMPOSE) run --rm --no-deps api python -m vs_api.seed
+
+test-api: ## pytest apps/api against the compose test database (no worker needed)
+	@test -f .env || cp .env.example .env
+	$(COMPOSE) up -d postgres redis minio-init mailpit
+	$(COMPOSE) run --rm --no-deps -e SKIP_MIGRATIONS=1 -e RATE_LIMITS_ENABLED=0 api \
+	  python -m pytest /app/apps/api -q -m "not integration" --cov=vs_api --cov-report=term-missing $(PYTEST_ARGS)
+
+test-api-integration: ## full flow with the worker (mock planner): register → upload → assets → preview → edit → swap → render → download
+	@test -f .env || cp .env.example .env
+	PLANNER_MODE=mock $(COMPOSE) up -d --build postgres redis minio-init mailpit api worker
+	$(COMPOSE) run --rm --no-deps -e SKIP_MIGRATIONS=1 -e RATE_LIMITS_ENABLED=0 api python -m pytest /app/apps/api/tests/test_integration.py -q -m integration $(PYTEST_ARGS)
+
+lint-api: ## ruff + mypy for apps/api
+	$(COMPOSE) run --rm --no-deps -e SKIP_MIGRATIONS=1 api sh -c "cd /app/apps/api && ruff check . && mypy vs_api"
+
+test: test-worker test-api ## everything that runs without a real LLM key

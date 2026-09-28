@@ -24,6 +24,23 @@ how copyleft tooling is handled.
 | fonts-noto-core (Debian) | OFL-1.1 | system fallback fonts | |
 | Google Fonts families cached by `vt.py fonts --precache` | OFL-1.1 / Apache-2.0 (per family) | on-screen text | list in `engine/video-engine/scripts/vtlib/fonts.py` |
 
+## API image
+
+| component | license |
+|---|---|
+| FastAPI, Starlette, uvicorn | MIT / BSD-3 |
+| SQLAlchemy, Alembic | MIT |
+| asyncpg, psycopg 3 | Apache-2.0 / LGPL-3 (psycopg, dynamically used) |
+| pydantic, pydantic-settings, email-validator | MIT / PSF |
+| argon2-cffi | MIT |
+| PyJWT | MIT |
+| boto3, botocore | Apache-2.0 |
+| redis-py, RQ | MIT / BSD-3 |
+| slowapi, limits | MIT |
+| sse-starlette | BSD-3 |
+| httpx | BSD-3 |
+| postgres:16, redis:7, minio, mailpit (containers) | PostgreSQL / BSD-3 / AGPL-3 (MinIO, unmodified server, dev only) / MIT |
+
 ## Dev / test only
 
 | component | license |

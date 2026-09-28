@@ -45,3 +45,46 @@ jobs:
           name: smoke-sheets
           path: engine-dev/_smoke/sheet_*.jpg
           if-no-files-found: ignore
+
+  api:
+    name: api image · migrations · pytest (compose)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare env
+        run: cp .env.example .env
+      - name: Build api image
+        run: docker compose build api
+      - name: Start dependencies
+        run: docker compose up -d postgres redis minio-init mailpit
+      - name: Lint (ruff, mypy)
+        run: docker compose run --rm --no-deps -e SKIP_MIGRATIONS=1 api sh -c "cd /app/apps/api && ruff check . && mypy vs_api"
+      - name: Migrations on a fresh database
+        run: docker compose run --rm --no-deps api alembic current
+      - name: pytest apps/api (coverage gate 80 %)
+        run: |
+          docker compose run --rm --no-deps -e SKIP_MIGRATIONS=1 -e RATE_LIMITS_ENABLED=0 api \
+            python -m pytest /app/apps/api -q -m "not integration" --cov=vs_api --cov-report=term-missing --cov-fail-under=80
+      - name: Compose logs on failure
+        if: failure()
+        run: docker compose logs --no-color | tail -300
+
+  integration:
+    name: full flow (api + worker, mock planner)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    needs: [worker, api]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare env
+        run: cp .env.example .env && echo "PLANNER_MODE=mock" >> .env
+      - name: Build and start the stack
+        run: docker compose up -d --build postgres redis minio-init mailpit api worker
+      - name: Wait for the API
+        run: for i in $(seq 1 60); do curl -fsS http://localhost:8000/health && break; sleep 2; done
+      - name: Integration test
+        run: docker compose run --rm --no-deps -e SKIP_MIGRATIONS=1 -e RATE_LIMITS_ENABLED=0 api python -m pytest /app/apps/api/tests/test_integration.py -q -m integration
+      - name: Compose logs on failure
+        if: failure()
+        run: docker compose logs --no-color api worker | tail -400

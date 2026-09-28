@@ -90,6 +90,22 @@ The worker downloads inputs into a per-job scratch directory, runs the engine wi
 during render, uploads `final.mp4`, `contact_sheet.jpg`, `final_sheet.jpg`, `plan.json` to
 `outputs/{user}/{project}/…`, then deletes the scratch directory.
 
+## 4b. API and worker hand-off (Phase 3)
+
+```
+browser ──presigned POST──► S3 inputs/{user}/{uuid}/file        (policy: content type + size ≤ 200 MB)
+browser ──POST /projects──► api: validates key/template/plan limits, creates project (created → queued_transcribe), enqueues
+                             RQ `transcribe` (or `priority`) → worker preview_job: download input + assets → Pipeline.prepare_preview()
+                             → uploads contact_sheet.jpg + plan.json → project.plan / editable_fields / asset_slots / words → preview_ready
+browser ──GET /projects/{id}/events (SSE)── api polls job_events every second → status / progress / end
+browser ──POST texts | asset-slots──► api (preview_ready → planning) → RQ `plan` → worker edit_job → stills → preview_ready
+browser ──POST render──► api reserves credits (ceil(duration/90)) in the same transaction as queued_render → RQ `render` → worker
+                             render_job → final.mp4 + final_sheet.jpg + qa → commit credits → done (failure: release + email)
+browser ──GET download──► presigned GET (15 min)
+```
+Job folders live on the `jobs` volume between preview and render and are deleted after `done`; a missing folder is rebuilt from the
+stored plan. RQ retries a job once only when the worker raised a transient `PipelineError`; user errors mark the project failed.
+
 ## 5. Storage layout (S3)
 
 ```

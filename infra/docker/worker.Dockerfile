@@ -36,14 +36,15 @@ ENV WHISPER_MODEL=${WHISPER_MODEL}
 COPY engine /app/engine
 COPY engine-dev /app/engine-dev
 
-# 5) worker package
+# 5) worker package + the API package (shared core: models, storage, queue; its deps are in the worker pins)
 COPY apps/worker /app/apps/worker
+COPY apps/api /app/apps/api
 COPY packages/shared /app/packages/shared
-RUN pip install --no-deps -e /app/apps/worker
+RUN pip install --no-deps -e /app/apps/worker && pip install --no-deps -e /app/apps/api
 
 # runtime: non-root, offline by default for the Hub, network guard is set per step by the pipeline
-ENV HF_HUB_OFFLINE=1 PYTHONPATH=/app/engine/video-engine/scripts
+ENV HF_HUB_OFFLINE=1 PYTHONPATH=/app/engine/video-engine/scripts VS_REPO_ROOT=/app
 RUN useradd -m -u 10001 worker && mkdir -p /cache /jobs && chown -R worker:worker /cache /jobs /app /ms-playwright
 USER worker
 ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD ["python3", "/app/engine/video-engine/scripts/vt.py", "doctor"]
+CMD ["python", "-m", "vs_worker.rqworker"]

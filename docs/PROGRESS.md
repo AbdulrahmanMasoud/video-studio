@@ -130,4 +130,34 @@ Worker (`apps/worker`, package `vs_worker`):
 2. Vision review is off by default (`PLANNER_VISION_REVIEW=1` to enable); cost is one extra vision call per plan.
 3. The fallback chain is empty by default; set `LLM_FALLBACK_CHAIN` (e.g. `openai/gpt-4o,groq/llama-3.3-70b-versatile`).
 
-## Phase 3 — API and database — not started
+## Phase 3 — API and database — DONE (2026-09-28)
+
+### What was done
+- `docker-compose.yml`: postgres (+ test database init), redis, minio (+ bucket init container), mailpit, api, worker (`jobs` volume,
+  `shm_size 1g`, `WORKER_CONCURRENCY` replicas). `.env.example` is enough for `make up`.
+- `apps/api` (FastAPI, SQLAlchemy 2 async, Alembic, RQ, boto3): every endpoint of §5.6 except the Lemon Squeezy specifics (Phase 5) and
+  Google OAuth (flag off). Migration `0001_initial` creates the §5.7 schema and seeds the 6 launch templates.
+- Worker RQ tasks (`preview_job`, `render_job`, `edit_job`) with status/progress/events, credits reserve → commit/release, S3 in/out, emails.
+- Rate limits (auth 10/min/IP, projects 10/h free · 60/h paid), concurrency (1 free · 3 paid), priority queue for agency, presign policies,
+  CORS, httpOnly cookies + CSRF, `/health`, `/metrics`, JSON logs with request ids.
+
+### What was tested
+| check | result |
+|---|---|
+| `ruff` + `mypy` (api, worker) | clean |
+| `pytest apps/api -m "not integration"` (in-process app, real Postgres/Redis/MinIO/Mailpit) | 19 passed; coverage 93 % total — routers: auth 93, me 98, templates 100, uploads 100, projects 96, assets 93, template-requests 94, billing 92, admin 94, health 76; services 98 |
+| email flows | verification and reset tokens read back from Mailpit's API |
+| credits | reserve at render, 402 when short, release on failure, retry re-reserves, ledger == fast path |
+| **DoD integration** (`test_integration.py`, live api + worker with `PLANNER_MODE=mock`) | register → upload the espeak MP3 → top-five project with 3 PNG assets + 1 invalid → `preview_ready` in ~8 s (assets ready/invalid, AI descriptions, all 3 placed) → edit a text → swap an asset → render → `done` → download a valid MP4 (h264 + aac, 720p, 1 credit committed) — 32 s end to end |
+| asset limits / invalid file | 415 for bad types, 413 over size, 422 over 20 per project, `invalid` status for a fake PNG |
+| `pytest apps/worker -m "not slow"` after the shared-core refactor | passing |
+| `make up` after `docker compose down -v` | all services healthy in ~10 s, health `ok`, integration flow passes on the fresh stack |
+
+### Findings
+1. Chromium crashed ("Target crashed") on the first containerised full-resolution render: 4 parallel pages at 1080×1920 in a 6.5 GB Docker
+   VM. Fixed with `--disable-dev-shm-usage --no-zygote` and `RENDER_WORKERS=2`; per-page memory is roughly 600 MB at 1080p.
+2. Coverage was misleading (51 % on tested routers) until greenlet concurrency was enabled (DECISIONS #33).
+3. Port 9000 was taken on the owner's machine; MinIO now uses 9100/9101.
+4. Lemon Squeezy checkout/portal/webhooks return 501 until Phase 5; the mock provider (`POST /billing/mock/subscribe`) works.
+
+## Phase 4 — Web app — not started

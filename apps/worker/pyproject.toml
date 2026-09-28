@@ -18,6 +18,17 @@ dependencies = [
     # LLM planner
     "litellm>=1.70",
     "pyyaml>=6.0",
+    # shared core with the API (models, storage, queue); the API package itself is installed with --no-deps
+    "sqlalchemy>=2.0.30",
+    "psycopg[binary]>=3.2",
+    "alembic>=1.13",
+    "pydantic-settings>=2.3",
+    "boto3>=1.34",
+    "redis>=5.0",
+    "rq>=1.16",
+    "argon2-cffi>=23.1",
+    "pyjwt>=2.8",
+    "fastapi>=0.115",
 ]
 
 [project.optional-dependencies]
@@ -44,7 +55,7 @@ markers = [
 ]
 
 [tool.ruff]
-line-length = 160
+line-length = 180
 target-version = "py312"
 
 [tool.ruff.lint]

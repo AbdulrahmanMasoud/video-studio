@@ -96,7 +96,8 @@ async def _main(job, workers, scale, out, start, end, stills):
     cfg, css, tdir = build_config(job)
     page_file = write_page(job, css, tdir)
     async with async_playwright() as p:
-        browser = await p.chromium.launch(args=["--allow-file-access-from-files", "--disable-web-security", "--font-render-hinting=none", "--disable-gpu"])
+        browser = await p.chromium.launch(args=["--allow-file-access-from-files", "--disable-web-security", "--font-render-hinting=none", "--disable-gpu",
+                                                "--disable-dev-shm-usage", "--no-zygote"])  # dev-shm: containers have a small /dev/shm; renderer crashes otherwise
         pg, info, errors = await _open(browser, page_file, cfg, scale)
         if errors:
             warn("browser: " + " | ".join(errors[-5:]), browser_errors=len(errors))

@@ -1,0 +1,825 @@
+[
+  {
+    "name": "before-after",
+    "title": "Before / After",
+    "category": "Marketing",
+    "summary": "Transformation: wipe slider reveal or side-by-side cards, with images or bullet lists",
+    "scenes": [
+      "compare",
+      "split",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body"
+    ],
+    "captions": {
+      "style": "pill",
+      "maxWords": 3
+    },
+    "music": {
+      "mood": "upbeat"
+    },
+    "needs_media": [],
+    "media_fields": [
+      "compare.before.media",
+      "compare.after.media",
+      "media.media"
+    ],
+    "labels": [
+      "before",
+      "after"
+    ],
+    "has_ar_example": false,
+    "preview": "/previews/before-after.jpg"
+  },
+  {
+    "name": "breaking",
+    "title": "Breaking",
+    "category": "News",
+    "summary": "News bulletin: BREAKING banner, headline bar, media window, key points, LIVE badge and ticker",
+    "scenes": [
+      "headline",
+      "point",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body"
+    ],
+    "captions": {
+      "style": "boxed",
+      "maxWords": 5
+    },
+    "music": {
+      "mood": "news"
+    },
+    "needs_media": [],
+    "media_fields": [
+      "headline.media",
+      "media.media"
+    ],
+    "labels": [
+      "breaking",
+      "live",
+      "latest"
+    ],
+    "has_ar_example": false,
+    "preview": "/previews/breaking.jpg"
+  },
+  {
+    "name": "chat",
+    "title": "AI Chat",
+    "category": "Tech",
+    "summary": "AI chat window: typing dots, streamed replies, reactions, auto-scroll and a result card",
+    "scenes": [
+      "chat",
+      "result",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body"
+    ],
+    "captions": {
+      "style": "line",
+      "maxWords": 5
+    },
+    "music": {
+      "mood": "lofi"
+    },
+    "needs_media": [],
+    "media_fields": [
+      "media.media"
+    ],
+    "labels": [
+      "assistant",
+      "typing",
+      "online"
+    ],
+    "has_ar_example": false,
+    "preview": "/previews/chat.jpg"
+  },
+  {
+    "name": "cinema",
+    "title": "Cinema",
+    "category": "Storytelling",
+    "summary": "Trailer / documentary look: letterbox, film grain, serif titles, Ken Burns shots, chapter cards",
+    "scenes": [
+      "title",
+      "shot",
+      "chapter",
+      "end",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body",
+      "serif"
+    ],
+    "captions": {
+      "style": "line",
+      "maxWords": 7
+    },
+    "music": {
+      "mood": "cinematic"
+    },
+    "needs_media": [],
+    "media_fields": [
+      "shot.media",
+      "media.media"
+    ],
+    "labels": [],
+    "has_ar_example": false,
+    "preview": "/previews/cinema.jpg"
+  },
+  {
+    "name": "city-map",
+    "title": "City Map",
+    "category": "Travel",
+    "summary": "Travel / places: stylised map, dropping pins, a route that draws itself and place cards with ratings",
+    "scenes": [
+      "map",
+      "place",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body"
+    ],
+    "captions": {
+      "style": "pill",
+      "maxWords": 3
+    },
+    "music": {
+      "mood": "acoustic"
+    },
+    "needs_media": [],
+    "media_fields": [
+      "place.media",
+      "media.media"
+    ],
+    "labels": [],
+    "has_ar_example": false,
+    "preview": "/previews/city-map.jpg"
+  },
+  {
+    "name": "counter",
+    "title": "Counter",
+    "category": "Data",
+    "summary": "Data storytelling: count-up numbers, rings, bar charts and animated comparisons",
+    "scenes": [
+      "stat",
+      "compare",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body"
+    ],
+    "captions": {
+      "style": "pill",
+      "maxWords": 3
+    },
+    "music": {
+      "mood": "corporate"
+    },
+    "needs_media": [],
+    "media_fields": [
+      "media.media"
+    ],
+    "labels": [],
+    "has_ar_example": false,
+    "preview": "/previews/counter.jpg"
+  },
+  {
+    "name": "echo",
+    "title": "Echo",
+    "category": "Typography",
+    "summary": "Kinetic typography: the spoken words themselves become the animation",
+    "scenes": [
+      "flow",
+      "words",
+      "quote",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body"
+    ],
+    "captions": {
+      "style": "none",
+      "enabled": false
+    },
+    "music": {
+      "mood": "cinematic"
+    },
+    "needs_media": [],
+    "media_fields": [
+      "media.media"
+    ],
+    "labels": [],
+    "has_ar_example": true,
+    "preview": "/previews/echo.jpg"
+  },
+  {
+    "name": "flash-sale",
+    "title": "Flash Sale",
+    "category": "Marketing",
+    "summary": "Loud promo: shaking discount, live countdown clock, product tiles and a promo-code CTA",
+    "scenes": [
+      "sale",
+      "items",
+      "cta",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body"
+    ],
+    "captions": {
+      "style": "pop",
+      "maxWords": 1
+    },
+    "music": {
+      "mood": "edm"
+    },
+    "needs_media": [],
+    "media_fields": [
+      "items.items[].media",
+      "media.media"
+    ],
+    "labels": [
+      "flash",
+      "off",
+      "cta"
+    ],
+    "has_ar_example": false,
+    "preview": "/previews/flash-sale.jpg"
+  },
+  {
+    "name": "hot-take",
+    "title": "Hot Take",
+    "category": "Opinion",
+    "summary": "Bold opinion: fiery kicker, slammed statement, live poll bars and a comment CTA",
+    "scenes": [
+      "take",
+      "poll",
+      "cta",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body"
+    ],
+    "captions": {
+      "style": "pop",
+      "maxWords": 1
+    },
+    "music": {
+      "mood": "edm"
+    },
+    "needs_media": [],
+    "media_fields": [
+      "media.media"
+    ],
+    "labels": [
+      "kicker",
+      "cta",
+      "ctaSub"
+    ],
+    "has_ar_example": false,
+    "preview": "/previews/hot-take.jpg"
+  },
+  {
+    "name": "journey",
+    "title": "Journey",
+    "category": "Storytelling",
+    "summary": "Timeline: a track that draws itself, events that pop in as the camera travels, milestone year counters",
+    "scenes": [
+      "timeline",
+      "milestone",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body"
+    ],
+    "captions": {
+      "style": "pill",
+      "maxWords": 3
+    },
+    "music": {
+      "mood": "cinematic"
+    },
+    "needs_media": [],
+    "media_fields": [
+      "media.media"
+    ],
+    "labels": [],
+    "has_ar_example": true,
+    "preview": "/previews/journey.jpg"
+  },
+  {
+    "name": "mirror",
+    "title": "Mirror",
+    "category": "Talking head",
+    "summary": "Talking-head edit: punch-in zooms on jump cuts, pop captions, stickers, headlines and lower thirds",
+    "scenes": [
+      "talk",
+      "title",
+      "lower",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body"
+    ],
+    "captions": {
+      "style": "pop",
+      "maxWords": 1
+    },
+    "music": {
+      "mood": "lofi"
+    },
+    "needs_media": [
+      "cam"
+    ],
+    "media_fields": [
+      "media.media"
+    ],
+    "labels": [],
+    "has_ar_example": false,
+    "preview": "/previews/mirror.jpg"
+  },
+  {
+    "name": "podcast",
+    "title": "Podcast",
+    "category": "Talking head",
+    "summary": "Podcast clip: split speaker panels that light up on the active voice, live meters, ON AIR badge, pull quotes",
+    "scenes": [
+      "split",
+      "solo",
+      "quote",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body"
+    ],
+    "captions": {
+      "style": "boxed",
+      "maxWords": 5
+    },
+    "music": {
+      "mood": "none"
+    },
+    "needs_media": [],
+    "media_fields": [
+      "solo.media",
+      "media.media"
+    ],
+    "labels": [
+      "onair"
+    ],
+    "has_ar_example": false,
+    "preview": "/previews/podcast.jpg"
+  },
+  {
+    "name": "quiz",
+    "title": "Quiz",
+    "category": "Engagement",
+    "summary": "Question card, A/B/C/D options, countdown ring and a green reveal",
+    "scenes": [
+      "question",
+      "explain",
+      "score",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body"
+    ],
+    "captions": {
+      "style": "pill",
+      "maxWords": 3
+    },
+    "music": {
+      "mood": "game"
+    },
+    "needs_media": [],
+    "media_fields": [
+      "media.media"
+    ],
+    "labels": [
+      "question",
+      "why",
+      "score"
+    ],
+    "has_ar_example": true,
+    "preview": "/previews/quiz.jpg"
+  },
+  {
+    "name": "recipe",
+    "title": "Recipe",
+    "category": "Food",
+    "summary": "Cooking: title with time & servings, ingredient checklist, numbered steps with a timer, final dish",
+    "scenes": [
+      "title",
+      "ingredients",
+      "step",
+      "final",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body",
+      "hand"
+    ],
+    "captions": {
+      "style": "pill",
+      "maxWords": 3
+    },
+    "music": {
+      "mood": "jazzy"
+    },
+    "needs_media": [],
+    "media_fields": [
+      "title.media",
+      "step.media",
+      "final.media",
+      "media.media"
+    ],
+    "labels": [
+      "ingredients",
+      "final"
+    ],
+    "has_ar_example": false,
+    "preview": "/previews/recipe.jpg"
+  },
+  {
+    "name": "review",
+    "title": "Review",
+    "category": "Reviews",
+    "summary": "Product / app / place review: star score, pros and cons, and a BUY / SKIP verdict stamp",
+    "scenes": [
+      "score",
+      "pros",
+      "cons",
+      "verdict",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body"
+    ],
+    "captions": {
+      "style": "pill",
+      "maxWords": 3
+    },
+    "music": {
+      "mood": "upbeat"
+    },
+    "needs_media": [],
+    "media_fields": [
+      "score.media",
+      "media.media"
+    ],
+    "labels": [
+      "pros",
+      "cons",
+      "verdict",
+      "buy",
+      "skip"
+    ],
+    "has_ar_example": false,
+    "preview": "/previews/review.jpg"
+  },
+  {
+    "name": "screen",
+    "title": "Screen Demo",
+    "category": "Tech",
+    "summary": "App or website walkthrough in a browser/phone frame with cursor, click ripples, labels and zooms",
+    "scenes": [
+      "demo",
+      "step",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body"
+    ],
+    "captions": {
+      "style": "pill",
+      "maxWords": 3
+    },
+    "music": {
+      "mood": "corporate"
+    },
+    "needs_media": [
+      "screen"
+    ],
+    "media_fields": [
+      "demo.media",
+      "media.media"
+    ],
+    "labels": [],
+    "has_ar_example": false,
+    "preview": "/previews/screen.jpg"
+  },
+  {
+    "name": "showcase",
+    "title": "Showcase",
+    "category": "Marketing",
+    "summary": "Product ad: product on a lit pedestal, feature chips, price slam and a tap-the-button CTA",
+    "scenes": [
+      "product",
+      "cta",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body"
+    ],
+    "captions": {
+      "style": "pill",
+      "maxWords": 3
+    },
+    "music": {
+      "mood": "upbeat"
+    },
+    "needs_media": [],
+    "media_fields": [
+      "product.media",
+      "media.media"
+    ],
+    "labels": [
+      "shop"
+    ],
+    "has_ar_example": false,
+    "preview": "/previews/showcase.jpg"
+  },
+  {
+    "name": "steps",
+    "title": "Steps",
+    "category": "Education",
+    "summary": "Numbered tips with a progress tracker, typed prompt cards, lists and toggles",
+    "scenes": [
+      "hook",
+      "count",
+      "step",
+      "outro",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body"
+    ],
+    "captions": {
+      "style": "pill",
+      "maxWords": 3
+    },
+    "music": {
+      "mood": "lofi"
+    },
+    "needs_media": [],
+    "media_fields": [
+      "media.media"
+    ],
+    "labels": [
+      "prompt",
+      "unclear"
+    ],
+    "has_ar_example": true,
+    "preview": "/previews/steps.jpg"
+  },
+  {
+    "name": "storytime",
+    "title": "Storytime",
+    "category": "Talking head",
+    "summary": "Personal story: warm graded footage, chapter cards, polaroid photos and an ending card",
+    "scenes": [
+      "chapter",
+      "talk",
+      "photo",
+      "end",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body",
+      "serif",
+      "hand"
+    ],
+    "captions": {
+      "style": "karaoke",
+      "maxWords": 4
+    },
+    "music": {
+      "mood": "piano"
+    },
+    "needs_media": [
+      "cam"
+    ],
+    "media_fields": [
+      "photo.media",
+      "media.media"
+    ],
+    "labels": [
+      "chapter",
+      "end"
+    ],
+    "has_ar_example": false,
+    "preview": "/previews/storytime.jpg"
+  },
+  {
+    "name": "terminal",
+    "title": "Terminal",
+    "category": "Tech",
+    "summary": "Developer terminal: typed commands, colored output, zoom-ins and callouts",
+    "scenes": [
+      "terminal",
+      "callout",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body",
+      "mono"
+    ],
+    "captions": {
+      "style": "boxed",
+      "maxWords": 4
+    },
+    "music": {
+      "mood": "ambient"
+    },
+    "needs_media": [],
+    "media_fields": [
+      "media.media"
+    ],
+    "labels": [],
+    "has_ar_example": false,
+    "preview": "/previews/terminal.jpg"
+  },
+  {
+    "name": "top-five",
+    "title": "Top Five",
+    "category": "Entertainment",
+    "summary": "Countdown ranking with huge rank numbers, optional images, a rank tracker and a drumroll for #1",
+    "scenes": [
+      "intro",
+      "rank",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body"
+    ],
+    "captions": {
+      "style": "pill",
+      "maxWords": 3
+    },
+    "music": {
+      "mood": "upbeat"
+    },
+    "needs_media": [],
+    "media_fields": [
+      "rank.media",
+      "media.media"
+    ],
+    "labels": [
+      "top"
+    ],
+    "has_ar_example": false,
+    "preview": "/previews/top-five.jpg"
+  },
+  {
+    "name": "verdict",
+    "title": "Verdict",
+    "category": "Education",
+    "summary": "Myth vs fact: the claim gets stamped false, the truth slides in, reasons stack up",
+    "scenes": [
+      "claim",
+      "reason",
+      "stamp",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body"
+    ],
+    "captions": {
+      "style": "pill",
+      "maxWords": 3
+    },
+    "music": {
+      "mood": "tension"
+    },
+    "needs_media": [],
+    "media_fields": [
+      "media.media"
+    ],
+    "labels": [
+      "myth",
+      "fact",
+      "busted"
+    ],
+    "has_ar_example": false,
+    "preview": "/previews/verdict.jpg"
+  },
+  {
+    "name": "whiteboard",
+    "title": "Whiteboard",
+    "category": "Education",
+    "summary": "Explainer that draws itself: marker boxes, arrows, checklists and circles",
+    "scenes": [
+      "title",
+      "diagram",
+      "list",
+      "compare",
+      "note",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "hand",
+      "body"
+    ],
+    "captions": {
+      "style": "karaoke",
+      "maxWords": 4
+    },
+    "music": {
+      "mood": "acoustic"
+    },
+    "needs_media": [],
+    "media_fields": [
+      "media.media"
+    ],
+    "labels": [],
+    "has_ar_example": false,
+    "preview": "/previews/whiteboard.jpg"
+  },
+  {
+    "name": "workout",
+    "title": "Workout",
+    "category": "Fitness",
+    "summary": "Fitness: exercise cards with live rep counter or interval ring, rest timers, finish screen",
+    "scenes": [
+      "exercise",
+      "rest",
+      "done",
+      "text",
+      "media"
+    ],
+    "fonts": [
+      "display",
+      "body"
+    ],
+    "captions": {
+      "style": "pill",
+      "maxWords": 3
+    },
+    "music": {
+      "mood": "workout"
+    },
+    "needs_media": [],
+    "media_fields": [
+      "exercise.media",
+      "media.media"
+    ],
+    "labels": [
+      "reps",
+      "sec",
+      "rest",
+      "next",
+      "done"
+    ],
+    "has_ar_example": false,
+    "preview": "/previews/workout.jpg"
+  }
+]

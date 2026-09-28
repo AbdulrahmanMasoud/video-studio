@@ -2,7 +2,31 @@
 
 All notable changes to this repository. Format: Keep a Changelog; versions are phases until the MVP ships.
 
-## [Unreleased] — Phase 2: LLM planner
+## [Unreleased] — Phase 3: API, database, queues, compose stack
+
+### API (`apps/api`, package `vs_api`)
+- FastAPI app: auth (argon2, JWT access/refresh httpOnly cookies + CSRF double submit, bearer for API clients, email verification and
+  password reset via Mailpit/Resend), `/me` + brand kit, `/templates` catalog (`packages/shared/templates.json` + `template_flags`),
+  presigned direct-to-S3 uploads (POST policy enforces content type and size), projects (create → enqueue, list, get, delete, SSE events,
+  texts, asset slots, render with credit reservation, retry, download), project assets (presign, register, list, patch, delete, limits),
+  template requests, billing (plans, mock provider, checkout/portal stubs), admin (LLM routing in `app_settings`, grant credits, toggle
+  templates, failed jobs, template requests), `/health` (db, redis, s3) and Prometheus-style `/metrics`.
+- `vs_api.core`: SQLAlchemy 2 models (§5.7) + Alembic initial migration with seeded template flags; credit ledger with fast-path balance
+  (reserve/commit/release/grant/renew, FOR UPDATE); state machine with `job_events`; RQ queues (`priority`, `transcribe`, `plan`, `render`,
+  retry once, time-limited); S3 storage helpers; email; plans.yaml rules; LLM settings shared with the worker.
+- Typed errors `{error_code, message}` on every 4xx/5xx; JSON request logs with `request_id`; slowapi per-IP limits on auth, Redis
+  per-user limit on project creation; CORS locked to `WEB_ORIGIN`.
+
+### Worker
+- `vs_worker.tasks`: `preview_job`, `render_job`, `edit_job` (texts / asset slots) driving the Pipeline with status transitions, progress,
+  credits, S3 downloads/uploads, emails; scratch job folder on the `jobs` volume with rebuild-from-plan fallback; `python -m vs_worker.rqworker`.
+- Chromium launched with `--disable-dev-shm-usage --no-zygote`; `RENDER_WORKERS` (default 2) caps parallel pages in containers.
+
+### Infra
+- `docker-compose.yml` (postgres, redis, minio + bucket init, mailpit, api, worker), `infra/docker/api.Dockerfile`, `.env.example`,
+  `Makefile` (`up`, `down`, `migrate`, `seed`, `test-api`, `test-api-integration`, `lint-api`), CI jobs for the API and the full flow.
+
+## Phase 2 — 2026-09-28: LLM planner
 
 ### Worker (`apps/worker`)
 - `vs_worker.llm.LLMClient`: one LiteLLM wrapper for Anthropic, OpenAI, Gemini, OpenRouter, Groq and Ollama; JSON mode where supported,
