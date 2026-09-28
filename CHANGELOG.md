@@ -2,7 +2,30 @@
 
 All notable changes to this repository. Format: Keep a Changelog; versions are phases until the MVP ships.
 
-## [Unreleased] — Phase 1: engine productisation
+## [Unreleased] — Phase 2: LLM planner
+
+### Worker (`apps/worker`)
+- `vs_worker.llm.LLMClient`: one LiteLLM wrapper for Anthropic, OpenAI, Gemini, OpenRouter, Groq and Ollama; JSON mode where supported,
+  fence stripping + balanced-object extraction + one repair pass otherwise; vision input (data URLs); fallback chain; per-request timeout;
+  cost from LiteLLM's map or `packages/shared/plans.yaml` `llm_prices`.
+- `vs_worker.llm.LLMSettings`: routing per task (`LLM_MODEL_PLANNER`, `LLM_MODEL_FAST`, `LLM_MODEL_VISION`, `PLANNER_MODEL_FREE/PAID`,
+  `LLM_FALLBACK_CHAIN`, `PLANNER_VISION_REVIEW`), defaults follow the first provider with a credential, overridable from `app_settings` keys `llm.*`.
+- `vs_worker.llm.MockLLM`: example plan re-anchored to the real transcript, media slots filled from the asset list, scripted responses for tests.
+- `vs_worker.planner.LLMPlanner`: system prompt (role + template SKILL.md + plan schema + hard rules + asset rules), user message (brief,
+  assets, shortened example (Arabic when applicable), indexed transcript); Pydantic + template-whitelist + anchor + asset-name validation,
+  then `vt.py stills --auto` as the ground truth; ≤ 3 attempts then `plan_failed`; deterministic fallback when the LLM is unreachable;
+  optional vision review of the contact sheet; `editable_fields` and `asset_slots`; usage/cost accounting on the job.
+- Edit-decision step (fast model proposes `--drop` ranges; strict validation, drop nothing on doubt) and asset auto-description (vision).
+- `Pipeline.apply_texts()` and `Pipeline.apply_assets()` (swap / remove / insert full-frame media at a word) → re-run stills.
+- `python -m vs_worker.cli run|providers` for manual runs with a real provider.
+
+### Engine
+- `edit`: a word is kept only if its midpoint survives the cut (words whose start fell inside the 70 ms crossfade pad were kept before).
+
+### Infra
+- Dockerfile: the font cache layer now precedes pip, so dependency changes no longer re-download fonts.
+
+## Phase 1 — 2026-09-27: engine productisation
 
 ### Engine (`engine/video-engine`)
 - `vt.py --json` / `VT_JSON=1`: one JSON object per log line (`level`, `msg`, `progress`, `error_code`).

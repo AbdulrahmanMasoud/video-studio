@@ -23,6 +23,7 @@ from typing import Literal, Protocol
 from .engine import ENGINE_DIR, EngineEvent, EngineRunner
 from .errors import PipelineError
 from .planner import fallback
+from .planner.schema import apply_asset_changes, apply_text_edits, asset_slots, editable_fields
 from .spec import JobSpec, PreviewResult, RenderResult, StepEvent
 
 
@@ -40,6 +41,8 @@ class PlanContext:
     platform: str
     brand: dict = field(default_factory=dict)
     duration_hint: float | None = None
+    validate: Callable[[dict], list[str]] | None = None   # writes plan.json + runs stills; returns engine errors
+    contact_sheet: Path | None = None
 
 
 class Planner(Protocol):
@@ -64,6 +67,7 @@ class Pipeline:
         self.job_dir.mkdir(parents=True, exist_ok=True)
         self.on_event = on_event
         self.planner = planner or FallbackPlanner()
+        self._plan_validated = False
         self.offline_render = offline_render
         self._step = "init"
         self.engine = EngineRunner(self.job_dir, env=engine_env, on_event=self._engine_event)
@@ -135,14 +139,34 @@ class Pipeline:
         if s.assets:
             self._run_step("assets", self._assets)
         self._run_step("plan", self._plan)
-        self._run_step("stills", self._stills)
+        if not self._plan_validated:
+            self._run_step("stills", self._stills)
         return self._preview_result()
 
     def apply_plan(self, plan: dict) -> PreviewResult:
         """Write an edited plan (texts, asset slots) and re-run stills as the validator."""
-        (self.job_dir / "plan.json").write_text(json.dumps(plan, ensure_ascii=False, indent=2), encoding="utf-8")
+        self._write_plan(plan)
         self._run_step("stills", self._stills)
+        self._record_plan_derivatives(plan)
         return self._preview_result()
+
+    def apply_texts(self, fields: list[dict]) -> PreviewResult:
+        """{fields:[{path,value}]} from the edit-texts form → plan.json → stills."""
+        try:
+            plan = apply_text_edits(self._read_json("plan.json", {}), fields)
+        except ValueError as e:
+            raise PipelineError("plan_invalid", str(e), step="stills", transient=False) from e
+        return self.apply_plan(plan)
+
+    def apply_assets(self, changes: list[dict] | None = None, inserts: list[dict] | None = None) -> PreviewResult:
+        """{changes:[{path, asset|null}], insert:[{asset, at_word, dur}]} → plan.json → stills."""
+        known = {k for k in self.job_json.get("media", {})}
+        words = self._read_json("words_edit.json") or self._read_json("words.json") or []
+        try:
+            plan = apply_asset_changes(self._read_json("plan.json", {}), self.spec.template, words, changes, inserts, known, ENGINE_DIR)
+        except ValueError as e:
+            raise PipelineError("plan_invalid", str(e), step="stills", transient=False) from e
+        return self.apply_plan(plan)
 
     def render(self) -> RenderResult:
         if not (self.job_dir / "plan.json").exists():
@@ -211,7 +235,17 @@ class Pipeline:
     def _edit(self):
         s = self.spec
         self.engine.run("analyze", timeout=s.timeouts.edit, step="edit")
-        self.engine.run("edit", "--pace", s.pace, timeout=s.timeouts.edit, step="edit")
+        args: list[object] = ["--pace", s.pace]
+        decide = getattr(self.planner, "decide_edits", None)
+        if decide and s.llm_edit_decisions:
+            analysis = (self.job_dir / "analysis.txt").read_text(encoding="utf-8") if (self.job_dir / "analysis.txt").exists() else ""
+            transcript = (self.job_dir / "transcript.txt").read_text(encoding="utf-8") if (self.job_dir / "transcript.txt").exists() else ""
+            words = self._read_json("words.json") or []
+            drops = decide(analysis, transcript, len(words), self.job_json.get("lang") or s.lang or "en") if words else None
+            if drops:
+                args += ["--drop", drops]
+                self._patch_job(edit_drops=drops)
+        self.engine.run("edit", *args, timeout=s.timeouts.edit, step="edit")
         jd = self.job_json
         if jd.get("input_kind") == "video" and (self.job_dir / "cam_edit.mp4").exists():
             self.engine.run("media", "--name", "cam", "--video", self.job_dir / "cam_edit.mp4", timeout=s.timeouts.edit, step="edit")
@@ -224,9 +258,16 @@ class Pipeline:
         mf = self.job_dir / "assets.json"
         mf.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
         self.engine.run("assets", "--manifest", mf, timeout=s.timeouts.assets, step="assets")
-        bad = [r for r in self._read_json("media/index.json", []) if r.get("error")]
-        for r in bad:
-            self.warnings.append(f"asset {r.get('name')} skipped: {r['error']}")
+        index = self._read_json("media/index.json", [])
+        for r in index:
+            if r.get("error"):
+                self.warnings.append(f"asset {r.get('name')} skipped: {r['error']}")
+            elif r.get("description"):
+                r.setdefault("description_source", "user")
+        describe = getattr(self.planner, "describe_assets", None)
+        if describe and any(not r.get("error") and not (r.get("description") or "").strip() for r in index):
+            index = describe(index, self.job_json.get("media", {}), self.job_dir, self.job_json.get("lang") or s.lang or "en")
+        (self.job_dir / "media/index.json").write_text(json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8")
 
     def _plan_context(self) -> PlanContext:
         jd = self.job_json
@@ -239,12 +280,39 @@ class Pipeline:
 
     def _plan(self):
         ctx = self._plan_context()
+        ctx.contact_sheet = self.job_dir / "qa/contact_sheet.jpg"
+        self._plan_validated = False
+
+        def validate(candidate: dict) -> list[str]:
+            self._write_plan(candidate)
+            try:
+                self._stills()
+            except PipelineError as e:
+                self._plan_validated = False
+                return [e.message] if e.code == "plan_invalid" else [f"{e.code}: {e.message}"]
+            self._plan_validated = True
+            return []
+
+        ctx.validate = validate
         plan = self.planner.plan(ctx)
         if not isinstance(plan, dict) or not plan.get("scenes"):
             raise PipelineError("plan_failed", "planner returned no scenes", step="plan", transient=False)
         plan.setdefault("lang", ctx.lang)
+        if self._read_json("plan.json") != plan:
+            self._plan_validated = False
+        self._write_plan(plan)
+        info = dict(getattr(self.planner, "last", {}) or {})
+        usage = info.get("usage") or list(getattr(self.planner, "usage", []) or [])
+        llm = summarize_usage(usage)
+        self._patch_job(planner=getattr(self.planner, "name", type(self.planner).__name__), llm=llm, plan_attempts=info.get("attempts", []))
+        self._record_plan_derivatives(plan)
+
+    def _write_plan(self, plan: dict):
         (self.job_dir / "plan.json").write_text(json.dumps(plan, ensure_ascii=False, indent=2), encoding="utf-8")
-        self._patch_job(planner=getattr(self.planner, "name", type(self.planner).__name__))
+
+    def _record_plan_derivatives(self, plan: dict):
+        self._patch_job(editable_fields=editable_fields(plan),
+                        asset_slots=[{"path": p, "asset": a} for p, a in asset_slots(plan, self.spec.template, ENGINE_DIR)])
 
     def _stills(self):
         try:
@@ -287,4 +355,28 @@ class Pipeline:
         return PreviewResult(plan=self._read_json("plan.json", {}), contact_sheet=self.job_dir / "qa/contact_sheet.jpg",
                              transcript_edit=te.read_text(encoding="utf-8") if te.exists() else "", words=self._read_json("words_edit.json", []),
                              detected_lang=jd.get("lang"), duration_s=float(jd.get("duration") or jd.get("duration_hint") or 0),
-                             planner=jd.get("planner", ""), warnings=list(dict.fromkeys(self.warnings)), asset_index=self._read_json("media/index.json", []))
+                             planner=jd.get("planner", ""), warnings=list(dict.fromkeys(self.warnings)), asset_index=self._read_json("media/index.json", []),
+                             editable_fields=jd.get("editable_fields", []), asset_slots=jd.get("asset_slots", []), llm=jd.get("llm", {}),
+                             unused_assets=sorted({r["name"] for r in self._read_json("media/index.json", []) if not r.get("error")}
+                                                  - {s["asset"] for s in jd.get("asset_slots", []) if s.get("asset")}))
+
+
+def summarize_usage(usage: list[dict]) -> dict:
+    """Aggregate LLM call usage records into the job-level accounting fields (§5.4 item 7)."""
+    if not usage:
+        return {}
+    tin = sum(int(u.get("tokens_in", 0)) for u in usage)
+    tout = sum(int(u.get("tokens_out", 0)) for u in usage)
+    cost = round(sum(float(u.get("cost_usd", 0)) for u in usage), 6)
+    models = [u.get("model") for u in usage if u.get("model")]
+    return {"model": models[-1] if models else None, "models": sorted(set(models)), "tokens_in": tin, "tokens_out": tout, "cost_usd": cost,
+            "calls": len(usage), "attempts": sum(1 for u in usage if u.get("task") in ("plan", "repair")), "by_task": _by_task(usage)}
+
+
+def _by_task(usage: list[dict]) -> dict:
+    out: dict[str, dict] = {}
+    for u in usage:
+        t = out.setdefault(u.get("task") or "other", {"calls": 0, "tokens_in": 0, "tokens_out": 0, "cost_usd": 0.0})
+        t["calls"] += 1; t["tokens_in"] += int(u.get("tokens_in", 0)); t["tokens_out"] += int(u.get("tokens_out", 0))
+        t["cost_usd"] = round(t["cost_usd"] + float(u.get("cost_usd", 0)), 6)
+    return out

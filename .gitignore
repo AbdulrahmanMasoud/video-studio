@@ -18,3 +18,4 @@ scratch/
 *.zip
 # os
 .DS_Store
+.build/

@@ -99,24 +99,38 @@ outputs/{user}/{project}/final.mp4 | contact_sheet.jpg | final_sheet.jpg | plan.
 ```
 Lifecycle: inputs deleted 7 days after `done`; outputs 30 days (free) / 180 days (paid).
 
-## 6. LLM planner (apps/worker/planner/)
+## 6. LLM planner (apps/worker/vs_worker/planner/, llm/)
 
 ```
-transcript_edit.txt + brief + template SKILL.md + plan-schema.md + asset list
+transcript_edit.txt + brief + template SKILL.md + plan-schema.md + asset list (media/index.json)
         │
         ▼
- build_prompt() ──► LLMClient.complete_json() (LiteLLM: anthropic | openai | gemini | openrouter | groq | ollama)
-        │                     ▲
-        ▼                     │ engine error appended, ≤ 3 attempts
- Pydantic validate ──► vt.py stills --auto  (ground truth) ──► contact_sheet.jpg
+ prompts.build_system_prompt / build_user_message
         │
-        ├─► editable_fields [{path,label,value,maxLen}]
-        ├─► asset_slots     [{path, asset}]
-        └─► plan.json  (+ optional vision review, flag PLANNER_VISION_REVIEW)
- fallback: deterministic planner for steps/mirror when no LLM is reachable
+        ▼
+ LLMClient.complete_json  (LiteLLM: anthropic | openai | gemini | openrouter | groq | ollama; JSON mode or JSON-only + repair pass;
+        │                  fallback chain; timeout; cost via LiteLLM map or plans.yaml)
+        ▼
+ schema.validate_plan  (Pydantic shape, scene whitelist from template.json, anchors < n_words, asset names ⊆ registered media)
+        │  ok
+        ▼
+ PlanContext.validate → pipeline writes plan.json and runs `vt.py stills --auto`  ──► qa/contact_sheet.jpg
+        │  engine errors appended to the conversation, ≤ 3 attempts, then error `plan_failed`
+        ▼
+ optional vision review (PLANNER_VISION_REVIEW): contact sheet + checklist → text fixes applied once by path, re-validated
+        │
+        ├─► editable_fields [{path,label,value,maxLen}]        (schema.editable_fields; apply with Pipeline.apply_texts)
+        ├─► asset_slots     [{path, asset}] + unused_assets     (schema.asset_slots;  apply with Pipeline.apply_assets)
+        └─► job.json: planner, llm {model, tokens_in/out, cost_usd, calls, attempts, by_task}, plan_attempts
+ LLM unreachable → planner.fallback (deterministic) so the job still reaches preview_ready
 ```
-Model routing lives in `app_settings` (`llm.planner_model`, `llm.fast_model`, `llm.vision_model`,
-`llm.free_tier_model`, `llm.fallback_chain`) with env defaults; `GET/PUT /admin/llm` edits it.
+
+Other LLM-backed steps, both optional and conservative: `planner.edit_decision` (fast model proposes `--drop` word ranges for
+`vt.py edit`; validated, drop nothing on doubt) and `planner.assets.AssetDescriber` (vision model writes one line per asset without a
+user description). Model routing (`LLMSettings`): `llm.planner_model`, `llm.fast_model`, `llm.vision_model`, `llm.free_tier_model`,
+`llm.fallback_chain` from env defaults, overridable per job with the `app_settings` rows (Phase 3, `GET/PUT /admin/llm`).
+Tests use `MockLLM` (example plan re-anchored to the transcript, scripted failures) and a fake transport under `LLMClient` for each
+provider; `tests/test_llm_real.py` hits real providers when their key is present.
 
 ## 7. Engine facts that shape the design (verified in Phase 0)
 

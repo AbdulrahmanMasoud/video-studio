@@ -144,8 +144,9 @@ def ensure_family(family: str, weights: str) -> str | None:
         u = m.group(1)
         return m.group(0) if u in failed else f"url('{files[u].resolve().as_uri()}')"
     local = re.sub(r"url\((https://[^)]+)\)", repl, css)
-    if failed:
+    if failed:  # do not cache a partial family: the next run (or precache --strict) retries it
         warn(f"font '{family}': {len(failed)} of {len(urls)} files failed to download", font=family)
+        return None
     css_file.write_text(local, encoding="utf-8")
     return local
 

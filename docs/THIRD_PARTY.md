@@ -16,6 +16,8 @@ how copyleft tooling is handled.
 | playwright (Python) + Chromium headless shell | Apache-2.0 / BSD-3 | frame rendering | separate browser process |
 | faster-whisper, CTranslate2 | MIT | transcription | Whisper weights: MIT (OpenAI) |
 | pydantic | MIT | job specs | |
+| litellm (+ openai, httpx, tiktoken, jinja2, aiohttp…) | MIT (deps: Apache-2.0 / BSD / MIT) | provider-agnostic LLM calls | see `apps/worker/requirements.txt` |
+| PyYAML | MIT | `plans.yaml` | |
 | ffmpeg (Debian bookworm build) | GPL-2.0+ (build enables GPL components: libx264) | decode/encode/mix | invoked as a subprocess, never linked |
 | espeak-ng | GPL-3.0 | offline test voice (fixtures, `TTS_PROVIDER=espeak`) | subprocess; not used for customer output by default |
 | tini | MIT | PID 1 signal forwarding | |

@@ -4,7 +4,7 @@ WHISPER_MODEL ?= small
 SHM ?= 1g
 JOBS ?= $(PWD)/jobs
 
-.PHONY: help worker-image test-worker smoke smoke-all e2e lint-worker
+.PHONY: help worker-image test-worker smoke smoke-all e2e lint-worker plan-run providers
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-16s %s\n", $$1, $$2}'
@@ -31,3 +31,17 @@ e2e: ## LLM-free end-to-end build (espeak → whisper → edit → plan → buil
 
 lint-worker: ## ruff + mypy for apps/worker (inside the image)
 	docker run --rm -v "$(PWD)/apps/worker:/app/apps/worker" $(WORKER_IMAGE) sh -c "cd /app/apps/worker && ruff check . && mypy vs_worker"
+
+INPUT ?= jobs/voice.wav
+TEMPLATE ?= steps
+LANG ?= en
+PLANNER ?= llm
+LLM_ENV = -e ANTHROPIC_API_KEY -e OPENAI_API_KEY -e GEMINI_API_KEY -e OPENROUTER_API_KEY -e GROQ_API_KEY -e OLLAMA_BASE_URL \
+  -e LLM_MODEL_PLANNER -e LLM_MODEL_FAST -e LLM_MODEL_VISION -e PLANNER_MODEL_FREE -e PLANNER_MODEL_PAID -e LLM_FALLBACK_CHAIN -e PLANNER_VISION_REVIEW
+
+plan-run: ## run a job with the LLM planner: make plan-run INPUT=voice.m4a TEMPLATE=steps LANG=ar [PLANNER=llm|mock|fallback]
+	docker run --rm --shm-size=$(SHM) $(LLM_ENV) -e WHISPER_MODEL=$(WHISPER_MODEL) -v "$(JOBS):/jobs" -v "$(abspath $(INPUT)):/input/$(notdir $(INPUT)):ro" $(WORKER_IMAGE) \
+	  python -m vs_worker.cli run --input /input/$(notdir $(INPUT)) --template $(TEMPLATE) --lang $(LANG) --out /jobs --name manual --planner $(PLANNER) --draft
+
+providers: ## show which LLM providers have credentials and the current routing
+	docker run --rm $(LLM_ENV) $(WORKER_IMAGE) python -m vs_worker.cli providers

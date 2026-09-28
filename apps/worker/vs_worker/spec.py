@@ -60,6 +60,8 @@ class JobSpec(BaseModel):
     whisper_model: str = "small"
     duration_limit_s: float = 600
     pace: Literal["tight", "natural", "relaxed", "none"] = "tight"
+    tier: Literal["free", "paid"] = "paid"      # picks the planner model (PLANNER_MODEL_FREE / PAID)
+    llm_edit_decisions: bool = True             # let the fast model propose --drop ranges
     render: RenderOptions = RenderOptions()
     timeouts: Timeouts = Timeouts()
     fps: int = 30
@@ -83,6 +85,10 @@ class PreviewResult(BaseModel):
     planner: str
     warnings: list[str] = []
     asset_index: list[dict] = []
+    editable_fields: list[dict] = []
+    asset_slots: list[dict] = []
+    unused_assets: list[str] = []
+    llm: dict = {}
 
 
 class RenderResult(BaseModel):

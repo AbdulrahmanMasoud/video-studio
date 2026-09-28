@@ -12,25 +12,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
-# 1) pinned Python deps (engine + worker; compiled with `uv pip compile`), then Playwright's Chromium
+# 1) pre-cache Google Fonts for every script/role so rendering works with VT_OFFLINE=1 (stdlib only, so it runs
+#    before pip: only fonts.py/common.py are copied here and the slow network-bound layer survives dependency changes).
+ARG FONT_SCRIPTS=
+COPY engine/video-engine/scripts/vtlib/common.py engine/video-engine/scripts/vtlib/fonts.py /tmp/vtlib/vtlib/
+RUN touch /tmp/vtlib/vtlib/__init__.py \
+    && cd /tmp/vtlib && FS="${FONT_SCRIPTS}" python3 -c "from vtlib.fonts import precache; import os, sys; s=os.environ.get('FS') or None; r=precache(s.split(',') if s else None); sys.exit(0 if all(r.values()) else 'font cache incomplete: ' + str([k for k,v in r.items() if not v]))" \
+    && du -sh /cache/video-studio/fonts && rm -rf /tmp/vtlib
+
+# 2) pinned Python deps (engine + worker; compiled with `uv pip compile`), then Playwright's Chromium
 COPY apps/worker/requirements.txt /tmp/requirements.txt
 RUN pip install -r /tmp/requirements.txt \
     && python -m playwright install --with-deps chromium \
     && rm -rf /var/lib/apt/lists/*
 
-# 2) bake the whisper model
+# 3) bake the whisper model
 ARG WHISPER_MODEL=small
 RUN python -c "from faster_whisper import WhisperModel; WhisperModel('${WHISPER_MODEL}', device='cpu', compute_type='int8')" \
     && echo "whisper ${WHISPER_MODEL} cached"
 ENV WHISPER_MODEL=${WHISPER_MODEL}
-
-# 3) pre-cache Google Fonts for every script/role so rendering works with VT_OFFLINE=1.
-#    Only fonts.py/common.py are copied here, so the (slow, network-bound) layer survives other engine edits.
-ARG FONT_SCRIPTS=
-COPY engine/video-engine/scripts/vtlib/common.py engine/video-engine/scripts/vtlib/fonts.py /tmp/vtlib/vtlib/
-RUN touch /tmp/vtlib/vtlib/__init__.py \
-    && cd /tmp/vtlib && FS="${FONT_SCRIPTS}" python3 -c "from vtlib.fonts import precache; import os; s=os.environ.get('FS') or None; precache(s.split(',') if s else None)" \
-    && du -sh /cache/video-studio/fonts && rm -rf /tmp/vtlib
 
 # 4) engine + dev tools
 COPY engine /app/engine

@@ -49,3 +49,28 @@ source of requirements; this file records the defaults we picked where the brief
 17. **Mix true-peak ceiling lowered from −1.2 to −1.5 dBTP.** The AAC encoder in `mux` overshoots by about
     0.3 dB, so the delivered file measured −0.9 dBTP against the documented “≤ −1 dBTP” standard. With −1.5 the
     final lands around −1.2. The QA threshold itself (−0.5) is unchanged.
+
+## 2026-09-27 — Phase 2
+
+18. **Two validators, in order.** A cheap in-process validator (Pydantic shape, template scene whitelist, anchor range, asset names) rejects
+    most bad plans without touching Chromium; only plans that pass it go to `vt.py stills --auto`, whose errors (missing word index, unknown
+    scene type, short-scene warnings are not errors) feed the repair message. Both share the same error wording as the engine.
+19. **The planner owns the validation loop, the pipeline owns the engine.** `PlanContext.validate` is a closure the pipeline injects (writes
+    `plan.json`, runs stills); the planner never shells out. When the accepted plan was already validated, the pipeline skips the extra stills run.
+20. **Mock strategy.** `MockLLM` returns the template's example plan re-anchored to the real transcript by scaling word indices from the
+    demo script length to the real word count (monotonic) and fills media slots with the job's assets in order. Tests that need specific
+    failures use its scripted queue. Provider-specific request building is tested through `LLMClient` with a fake `completion` for all six
+    providers; real calls run only when a credential is present (`tests/test_llm_real.py`).
+21. **Editable fields are derived, not asked for.** Every string in `scenes[*]`/`labels` that is not a time anchor, enum-like key (type,
+    icon, kind, media, …) or empty becomes `{path, label, value, maxLen}`; labels are deterministic ("step #2 · card · text") so the web app
+    can localise by key. The fast model is not used for labels (cost, determinism).
+22. **Inserting a media scene resumes the interrupted scene.** `insert` at word *w* for *d* seconds adds a `media` scene with an explicit
+    `end` and, if the next scene starts later, a copy of the interrupted scene starting at the insert's end, so the frame never goes empty.
+23. **Edit decisions are conservative by construction.** Ranges must be in bounds, non-overlapping, ≤ 15 words each and ≤ 25 % of the words
+    in total; any violation drops nothing. The step runs only when the planner exposes `decide_edits` and `JobSpec.llm_edit_decisions` is on.
+24. **Free vs paid model choice is a `JobSpec.tier`**, resolved by `LLMSettings.planner_for_tier`; the API sets it from the user's plan.
+25. **Word survival after a cut is decided by the word's midpoint** (engine `edit.py`). With the old "start survives" rule a word whose first
+    20 ms fell inside the crossfade padding stayed in the transcript although its audio was cut, which broke `--drop` accounting.
+26. **The font pre-cache layer is strict.** `ensure_family` no longer writes `font.css` for a family with missing subset files, and the
+    Dockerfile step exits non-zero when any family is incomplete. Why: an overnight build lost DNS mid-download, Docker cached the
+    "successful" but degraded layer, and every later build would have shipped it silently.

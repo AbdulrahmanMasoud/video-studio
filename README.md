@@ -11,7 +11,7 @@ decisions and progress.
 
 ## Status
 
-Phase 0 (engine verified inside Docker) and Phase 1 (engine productisation + worker pipeline) are done.
+Phases 0–2 are done: engine verified in Docker, engine productised, worker pipeline, LLM planner (LiteLLM, all providers) with mock.
 See `docs/PROGRESS.md` for what was tested and what is open, `CHANGELOG.md` for the change list.
 
 ## Developer workflow (everything runs in Docker)
@@ -23,7 +23,12 @@ make smoke                        # engine stills smoke test for a few templates
 make smoke-all                    # all 24 templates at 9:16 + 16:9, offline (what CI runs)
 make e2e                          # LLM-free espeak → whisper → edit → plan → build --draft into ./jobs/smoke
 make lint-worker                  # ruff + mypy
+make plan-run INPUT=voice.m4a TEMPLATE=steps LANG=ar   # real-model run (needs a provider key in .env or the environment)
 ```
+
+LLM providers: set one of `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, `OPENROUTER_API_KEY`, `GROQ_API_KEY`, `OLLAMA_BASE_URL`.
+Routing: `LLM_MODEL_PLANNER`, `LLM_MODEL_FAST`, `LLM_MODEL_VISION`, `PLANNER_MODEL_FREE`, `PLANNER_MODEL_PAID`, `LLM_FALLBACK_CHAIN`,
+`PLANNER_VISION_REVIEW`. `PLANNER_MODE=mock|fallback` avoids any provider. `python -m vs_worker.cli providers` shows what is available.
 
 Engine CLI cheatsheet (inside the image, `python3 /app/engine/video-engine/scripts/vt.py …`):
 

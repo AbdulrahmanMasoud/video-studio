@@ -93,4 +93,41 @@ Worker (`apps/worker`, package `vs_worker`):
 4. The fallback planner ignores the brief except `title`; brand palette/fonts are applied by the engine from `init`.
 5. Next (Phase 2): LLM planner with the validation loop, editable fields, asset slots, edit-decision step, MockLLM; the `Planner` protocol in `pipeline.py` is the plug-in point.
 
-## Phase 2 — LLM planner — not started
+## Phase 2 — LLM planner — DONE (2026-09-27), pending the owner's real-model run
+
+### What was done (`apps/worker/vs_worker/llm/`, `planner/`)
+- `LLMClient` (LiteLLM) with JSON mode / JSON-only + repair, vision input, fallback chain, timeouts, cost accounting (LiteLLM map → `plans.yaml`).
+- `LLMSettings`: per-task routing with env defaults (first provider with a key wins: Anthropic → OpenAI → Ollama), `app_settings` overrides,
+  free/paid tier models, `provider_status()` for `/admin/llm`.
+- `LLMPlanner`: prompt builder (role, template SKILL.md, plan schema, hard rules, asset rules, brief, assets, shortened example — Arabic when
+  the video is Arabic —, indexed transcript), validation loop (Pydantic + whitelist + anchors + asset names → engine stills), ≤ 3 attempts →
+  `plan_failed`, fallback planner when the LLM is unreachable, optional vision review, `editable_fields`, `asset_slots`, `unused_assets`,
+  usage/cost on the job (`llm.*` in job.json, `PreviewResult.llm`).
+- Edit-decision step (fast model → validated `--drop` ranges) and asset auto-description (vision) wired into the pipeline.
+- `Pipeline.apply_texts()` / `apply_assets()` (swap, remove, insert a full-frame `media` scene at a word, interrupted scene resumes).
+- `MockLLM` (example plan re-anchored to the transcript, media slots filled, scripted queue) and `python -m vs_worker.cli`.
+- `packages/shared/plans.yaml` (plans, limits, basic templates, LLM price table).
+
+### What was tested (image `vs-worker:phase2`)
+| check | result |
+|---|---|
+| `ruff` + `mypy` | clean (21 source files) |
+| `pytest apps/worker` (full) | 80 passed, 7 skipped (6 real-provider smokes without keys, 1 OpenAI TTS) in 101 s |
+| DoD: valid plan accepted | `test_mock_plan_accepted_and_usage_recorded` |
+| DoD: bad word index repaired within 3 attempts (mock: bad then good) | `test_bad_anchor_repaired_within_attempts`, engine errors loop: `test_engine_errors_feed_the_repair_loop` |
+| DoD: unknown scene type / unknown asset rejected | `test_unknown_scene_type_and_asset_rejected_then_plan_failed` (→ `plan_failed` after 3) |
+| DoD: editable fields + asset slots round-trip | `test_apply_text_edits_roundtrip…`, `test_asset_slots_and_swap_remove_insert`, engine-backed `test_top_five_places_each_image_in_its_rank` (edit → swap → remove → insert → stills) |
+| DoD: top-five with 5 Pillow images placed in ranks, contact sheet shows them | same test: ≥ 20 % of each rank still's pixels are the asset colour |
+| every provider through the same code path | `test_every_provider_same_code_path[6 providers]` (fake transport; Ollama `api_base`, JSON mode flag) |
+| edit decisions | `test_edit_decision_validation`, pipeline `test_mock_planner_full_pipeline_with_llm_edit_decision` (2 words dropped end to end) |
+| Arabic example / RTL plan | `test_arabic_example_plan_is_used_for_arabic` (quiz, labels in Arabic, stills render) |
+| engine smoke after the `edit.py` change | 48/48 ok |
+
+### Not done / needs the owner
+1. **Manual run with a real model** (DoD): no provider key is available in this environment. Run
+   `docker run --rm -e ANTHROPIC_API_KEY -v $PWD/jobs:/jobs vs-worker:dev python -m vs_worker.cli run --input /jobs/voice.m4a --template steps --lang ar --size 9:16 --out /jobs`
+   on the espeak fixture and on your Arabic sample and share `qa/contact_sheet.jpg` + `plan.json`. `tests/test_llm_real.py` also runs per key.
+2. Vision review is off by default (`PLANNER_VISION_REVIEW=1` to enable); cost is one extra vision call per plan.
+3. The fallback chain is empty by default; set `LLM_FALLBACK_CHAIN` (e.g. `openai/gpt-4o,groq/llama-3.3-70b-versatile`).
+
+## Phase 3 — API and database — not started

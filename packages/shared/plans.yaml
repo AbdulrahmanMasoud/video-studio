@@ -1,0 +1,37 @@
+# Single source of truth for plans and pricing (API + web read this file).
+# credits: 1 credit = one rendered video up to 90 s (1 credit per started 90 s beyond).
+# max_res: cap on the short side of the delivered video (px). templates: basic | all.
+plans:
+  free:    {price_usd: 0,  credits: 2,   max_res: 720,  watermark: true,  templates: basic, brand_kit: false, priority_queue: false, output_retention_days: 30}
+  starter: {price_usd: 15, credits: 15,  max_res: 1080, watermark: false, templates: basic, brand_kit: false, priority_queue: false, output_retention_days: 180}
+  pro:     {price_usd: 29, credits: 50,  max_res: 2160, watermark: false, templates: all,   brand_kit: true,  priority_queue: false, output_retention_days: 180}
+  agency:  {price_usd: 79, credits: 150, max_res: 2160, watermark: false, templates: all,   brand_kit: true,  priority_queue: true,  output_retention_days: 180}
+
+limits:
+  input_max_mb: 200
+  input_max_seconds: 600
+  assets_per_project: 20
+  asset_image_max_mb: 25
+  asset_clip_max_mb: 100
+  asset_clip_max_seconds: 60
+  concurrent_jobs: {free: 1, paid: 3}
+  projects_per_hour: {free: 10, paid: 60}
+  input_retention_days: 7
+
+# Templates enabled at launch; the rest exist in the catalog behind a per-template flag (admin toggles).
+templates:
+  basic: [steps, mirror, quiz, chat, top-five, hot-take]
+
+# Fallback LLM price table (USD per 1M tokens) used when LiteLLM's cost map does not know a model.
+# Keys are LiteLLM model strings. Keep in sync with vendor price pages.
+llm_prices:
+  anthropic/claude-sonnet-5:            {input: 3.00,  output: 15.00}
+  anthropic/claude-opus-5-5:            {input: 15.00, output: 75.00}
+  anthropic/claude-haiku-4-5-20251001:  {input: 1.00,  output: 5.00}
+  openai/gpt-4o:                        {input: 2.50,  output: 10.00}
+  openai/gpt-4o-mini:                   {input: 0.15,  output: 0.60}
+  gemini/gemini-2.5-pro:                {input: 1.25,  output: 10.00}
+  gemini/gemini-2.5-flash:              {input: 0.30,  output: 2.50}
+  groq/llama-3.3-70b-versatile:         {input: 0.59,  output: 0.79}
+  default:                              {input: 3.00,  output: 15.00}
+  ollama/*:                             {input: 0.0,   output: 0.0}

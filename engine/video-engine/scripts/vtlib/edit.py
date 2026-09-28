@@ -244,9 +244,9 @@ def build(job, pace="tight", drops=None, section_words=None, lead=0.3, tail=0.35
     new = []
     for i, w in enumerate(words):
         mid = (w["s"] + w["e"]) / 2
+        if mp(mid) is None:
+            continue  # the word was (mostly) cut away: retake/drop. Its start alone may still fall in the 70 ms crossfade pad.
         s = mp(w["s"]) if mp(w["s"]) is not None else mp(mid)
-        if s is None:
-            continue  # the word was cut away (retake/drop)
         e = mp(w["e"])
         if e is None:
             e = s + max(0.08, min(w["e"] - w["s"], 0.6))
