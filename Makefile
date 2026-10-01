@@ -4,7 +4,7 @@ WHISPER_MODEL ?= small
 SHM ?= 1g
 JOBS ?= $(PWD)/jobs
 
-.PHONY: help worker-image test-worker smoke smoke-all e2e lint-worker plan-run providers up down logs build migrate seed test-api test-api-integration lint-api test
+.PHONY: help worker-image test-worker smoke smoke-all e2e lint-worker plan-run providers up down logs build migrate seed test-api test-api-integration lint-api test web-dev test-web lint-web lighthouse
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-16s %s\n", $$1, $$2}'
@@ -84,3 +84,18 @@ lint-api: ## ruff + mypy for apps/api
 	$(COMPOSE) run --rm --no-deps -e SKIP_MIGRATIONS=1 api sh -c "cd /app/apps/api && ruff check . && mypy vs_api"
 
 test: test-worker test-api ## everything that runs without a real LLM key
+
+# ---- web ----------------------------------------------------------------------------------------------
+web-dev: ## run the Next.js dev server on the host against the compose API (http://localhost:3000)
+	cd apps/web && API_INTERNAL_URL=http://localhost:8000 npm run dev
+
+lint-web: ## eslint + tsc for apps/web (host node)
+	cd apps/web && npm run -s lint && npx tsc --noEmit
+
+test-web: ## Playwright e2e + RTL/axe against the compose stack (mock planner); report in apps/web/playwright-report
+	@test -f .env || cp .env.example .env
+	PLANNER_MODE=mock S3_PUBLIC_ENDPOINT_URL=http://minio:9000 WEB_ORIGIN=http://web:3000 $(COMPOSE) up -d --build postgres redis minio-init mailpit api worker web
+	PLANNER_MODE=mock S3_PUBLIC_ENDPOINT_URL=http://minio:9000 WEB_ORIGIN=http://web:3000 $(COMPOSE) --profile e2e run --rm --build e2e npx playwright test $(PW_ARGS)
+
+lighthouse: ## Lighthouse accessibility ≥ 90 on landing + dashboard (inside the e2e image)
+	PLANNER_MODE=mock S3_PUBLIC_ENDPOINT_URL=http://minio:9000 WEB_ORIGIN=http://web:3000 $(COMPOSE) --profile e2e run --rm e2e node e2e/lighthouse.mjs

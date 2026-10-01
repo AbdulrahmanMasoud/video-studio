@@ -1,0 +1,9 @@
+node_modules
+.next
+out
+playwright-report
+test-results
+e2e/.auth
+*.tsbuildinfo
+next-env.d.ts
+public/previews

@@ -97,3 +97,19 @@ source of requirements; this file records the defaults we picked where the brief
     inside the network tests keep the signed `Host` header while talking to `minio:9000`.
 35. **The integration test talks to the live API container over HTTP** (same database and queue as the running worker); the unit tests use
     the in-process app against the `videostudio_test` database created by `infra/postgres/init-test-db.sh`.
+
+## 2026-10-01 — Phase 4
+
+36. **The browser never talks to the API origin directly.** Next.js rewrites `/api/*` to `API_INTERNAL_URL` (http://api:8000 in compose,
+    the Caddy upstream in prod), so session cookies are first-party, CORS never bites, and the SSE stream rides the same proxy. A
+    polling fallback kicks in if `EventSource` errors (some proxies buffer streams).
+37. **App pages are client components behind an auth guard; marketing pages are server components.** The dashboard/wizard/project pages
+    depend entirely on the session, so rendering them on the server would only add a second data path; the landing/pricing/legal pages
+    stay server-rendered for SEO and Lighthouse.
+38. **Tailwind 4 with logical utilities** (`ps-`, `ms-`, `text-start`) and `dir="rtl"` on `<html>`; no per-locale stylesheets. Arabic text uses
+    IBM Plex Sans Arabic via `next/font`.
+39. **e2e runs in a Playwright container inside the compose network** (`--profile e2e`), with `S3_PUBLIC_ENDPOINT_URL=http://minio:9000` and
+    `WEB_ORIGIN=http://web:3000` passed to the API so presigned uploads and downloads resolve from the test browser. Test images are generated
+    in-process (a 30-line PNG encoder) instead of committing fixtures; the voice fixture is the Phase 3 MP3.
+40. **A project-local npm cache** (`.build/npm-cache`) is used on this machine because `~/.npm/_cacache` contains root-owned entries that
+    made `npm install` resolve packages to `undefined`. CI uses a clean cache.

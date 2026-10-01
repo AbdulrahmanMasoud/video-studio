@@ -75,6 +75,9 @@ services:
       dockerfile: infra/docker/api.Dockerfile
     image: vs-api:dev
     <<: *env
+    environment:
+      S3_PUBLIC_ENDPOINT_URL: ${S3_PUBLIC_ENDPOINT_URL:-http://localhost:9100}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000}
     depends_on:
       postgres:
         condition: service_healthy
@@ -114,6 +117,38 @@ services:
     deploy:
       replicas: ${WORKER_CONCURRENCY:-1}
     restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: infra/docker/web.Dockerfile
+      args:
+        API_INTERNAL_URL: http://api:8000
+    image: vs-web:dev
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    restart: unless-stopped
+
+  e2e:
+    build:
+      context: .
+      dockerfile: infra/docker/e2e.Dockerfile
+    image: vs-e2e:dev
+    profiles: ["e2e"]
+    shm_size: 1g
+    environment:
+      BASE_URL: http://web:3000
+      API_URL: http://api:8000
+      MAILPIT_URL: http://mailpit:8025
+    depends_on:
+      web:
+        condition: service_started
+    volumes:
+      - ./apps/web/playwright-report:/e2e/playwright-report
+      - ./apps/web/test-results:/e2e/test-results
 
 volumes:
   pgdata:

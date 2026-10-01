@@ -2,7 +2,27 @@
 
 All notable changes to this repository. Format: Keep a Changelog; versions are phases until the MVP ships.
 
-## [Unreleased] — Phase 3: API, database, queues, compose stack
+## [Unreleased] — Phase 4: web app
+
+### Web (`apps/web`, Next.js 15 App Router, TypeScript, Tailwind 4, next-intl)
+- Bilingual (en/ar) with `dir="rtl"` for Arabic, logical Tailwind utilities, Inter + IBM Plex Sans Arabic; locale switcher keeps the page.
+- Pages: landing with the 24-template gallery, pricing, terms/privacy/refunds placeholders, login/register/forgot/reset/verify,
+  dashboard (status chips, live refresh), new-video wizard (source upload with direct-to-S3 progress and client-side duration check,
+  or script when TTS is on; language/size/platform; template picker with "Request a template"; assets with descriptions; brief),
+  project page (status timeline fed by SSE with polling fallback, contact-sheet preview, edit-texts form, asset panel with swap /
+  remove / insert-at-word, render with credit cost, download, retry, typed error explanations, QA notes, transcript), billing
+  (plan, credits, plans grid, mock checkout), settings (locale, brand kit, delete account).
+- API access through a same-origin `/api/*` rewrite (first-party cookies + CSRF header); types generated with `openapi-typescript`.
+- Playwright e2e: full flow (register → create with 2 image assets → preview → edit text → swap asset → render → download), Arabic RTL
+  screenshots of 3 pages with overflow and axe checks; Lighthouse accessibility gate (≥ 90) on landing and dashboard.
+- `infra/docker/web.Dockerfile` (standalone), `infra/docker/e2e.Dockerfile` (Playwright + Lighthouse), compose `web` service and `e2e` profile,
+  `make web-dev / lint-web / test-web / lighthouse`, CI job.
+
+### API
+- `/me` and `/templates` now return typed sub-objects (`PlanInfo`, `LimitsOut`, `FeaturesOut`, `SizeOut`, `LanguageOut`) so the
+  generated client types are precise.
+
+## Phase 3 — 2026-09-28: API, database, queues, compose stack
 
 ### API (`apps/api`, package `vs_api`)
 - FastAPI app: auth (argon2, JWT access/refresh httpOnly cookies + CSRF double submit, bearer for API clients, email verification and

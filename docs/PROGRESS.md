@@ -160,4 +160,40 @@ Worker (`apps/worker`, package `vs_worker`):
 3. Port 9000 was taken on the owner's machine; MinIO now uses 9100/9101.
 4. Lemon Squeezy checkout/portal/webhooks return 501 until Phase 5; the mock provider (`POST /billing/mock/subscribe`) works.
 
-## Phase 4 — Web app — not started
+## Phase 4 — Web app — DONE (2026-10-01)
+
+### What was done (`apps/web`)
+- Next.js 15 (App Router, TypeScript, Tailwind 4) with next-intl: `/en` and `/ar` routes, `dir="rtl"` for Arabic, logical utilities,
+  Inter + IBM Plex Sans Arabic, a locale switcher that keeps the current page, full `en.json`/`ar.json` catalogs (key parity checked).
+- Pages: landing (hero, how it works, 24-template gallery), pricing, terms/privacy/refunds placeholders, login, register, forgot, reset,
+  verify, dashboard, new-video wizard (5 steps), project page, billing (plans + mock checkout), settings (locale, brand kit, delete account).
+- Direct-to-S3 uploads with progress (presigned POST), client-side duration check, SSE status with always-on polling fallback,
+  contact-sheet preview, edit-texts form, asset panel (slots, swap, remove, insert at a word, unused list, invalid files), render with
+  credit cost, download, retry, typed error messages, verify-email banner, request-a-template dialog.
+- Same-origin `/api/*` rewrite to the API (first-party cookies + CSRF header); client types generated from the OpenAPI document.
+- `infra/docker/web.Dockerfile` (standalone), `infra/docker/e2e.Dockerfile` (Playwright 1.63 + Lighthouse), compose `web` + `e2e` profile,
+  `make web-dev / lint-web / test-web / lighthouse`, CI `web` job.
+
+### What was tested
+| check | result |
+|---|---|
+| `tsc --noEmit`, `eslint` | clean |
+| `next build` | all routes compile (standalone output) |
+| Playwright e2e `flow.spec.ts` (register → wizard: upload the MP3, language/size, top-five, 2 generated PNG assets, brief → preview → edit a text → swap an asset → render → download) | passed, 42 s end to end against the compose stack with the mock planner |
+| Playwright `rtl.spec.ts` (Arabic landing, register, dashboard at 390 px and 1280 px: `dir=rtl`, no horizontal overflow, screenshots, axe WCAG 2.0/2.1 A+AA no serious/critical) | 3 passed |
+| axe on the English landing | passed |
+| Lighthouse accessibility (`e2e/lighthouse.mjs`) | landing 100, dashboard 100 |
+| API unit suite after the typed `/me` and `/templates` schemas | passing |
+
+### Findings
+1. Compose `env_file` reads an inline comment after an empty value as the value (`LLM_MODEL_PLANNER=   # default…` became the model name).
+   Comments in `.env.example` now sit on their own lines. Worth remembering for every future key.
+2. The SSE stream through the Next.js rewrite is not guaranteed to flush, so the project page polls every 2.5 s while a job runs and uses SSE only
+   as an accelerator (DECISIONS #36).
+3. The Playwright browser crashed ("Page crashed") during the worker's render because the container's /dev/shm is 64 MB; the e2e service now has
+   `shm_size: 1g` and launches Chromium with `--disable-dev-shm-usage`.
+4. `S3_PUBLIC_ENDPOINT_URL` and `WEB_ORIGIN` are shell-overridable in compose for the in-network e2e run (`make test-web` sets them); on a laptop
+   the defaults (localhost:9100 / localhost:3000) are right for a real browser.
+5. Google OAuth stays behind its flag (not built); the "paste a script" source is disabled in the UI until `TTS_ENABLED=1` with a provider.
+
+## Phase 5 — Billing, plans, limits — not started

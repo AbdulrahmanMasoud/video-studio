@@ -67,12 +67,41 @@ class UserOut(BaseModel):
     created_at: datetime
 
 
+class PlanInfo(BaseModel):
+    name: str
+    price_usd: float = 0
+    credits: int = 0
+    max_res: int = 720
+    watermark: bool = True
+    templates: str = "basic"
+    brand_kit: bool = False
+    priority_queue: bool = False
+    output_retention_days: int = 30
+
+
+class LimitsOut(BaseModel):
+    input_max_mb: int = 200
+    input_max_seconds: int = 600
+    assets_per_project: int = 20
+    asset_image_max_mb: int = 25
+    asset_clip_max_mb: int = 100
+    asset_clip_max_seconds: int = 60
+    concurrent_jobs: int = 1
+    projects_per_hour: int = 10
+
+
+class FeaturesOut(BaseModel):
+    tts: bool = False
+    google_oauth: bool = False
+    payments_provider: str = "mock"
+
+
 class MeOut(BaseModel):
     user: UserOut
-    plan: dict
+    plan: PlanInfo
     brand_kit: BrandKitOut | None
-    limits: dict
-    features: dict
+    limits: LimitsOut
+    features: FeaturesOut
 
 
 class UpdateMeIn(BaseModel):
@@ -99,11 +128,23 @@ class TemplateOut(BaseModel):
     available: bool
 
 
+class SizeOut(BaseModel):
+    id: str
+    label: str
+    w: int | None
+    h: int | None
+
+
+class LanguageOut(BaseModel):
+    code: str
+    name: str
+
+
 class CatalogOut(BaseModel):
     templates: list[TemplateOut]
-    sizes: list[dict]
+    sizes: list[SizeOut]
     platforms: list[str]
-    languages: list[dict]
+    languages: list[LanguageOut]
     limits: dict
 
 

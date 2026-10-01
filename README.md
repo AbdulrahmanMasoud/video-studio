@@ -11,18 +11,21 @@ decisions and progress.
 
 ## Status
 
-Phases 0–3 are done: engine verified in Docker, engine productised, worker pipeline, LLM planner (LiteLLM, all providers) with mock, API + database + queues + compose stack.
+Phases 0–4 are done: engine verified in Docker, engine productised, worker pipeline, LLM planner (LiteLLM, all providers) with mock, API + database + queues + compose stack, bilingual Next.js web app with e2e tests.
 See `docs/PROGRESS.md` for what was tested and what is open, `CHANGELOG.md` for the change list.
 
 ## Run the stack
 
 ```bash
 cp .env.example .env            # defaults work locally; add an LLM key to get real storyboards (otherwise the fallback planner runs)
-make up                         # postgres, redis, minio (+bucket), mailpit, api (migrations on start), worker
-open http://localhost:8000/docs # API docs · MinIO console :9101 · Mailpit :8025
+make up                         # postgres, redis, minio (+bucket), mailpit, api (migrations on start), worker, web
+open http://localhost:3000      # the app · API docs :8000/docs · MinIO console :9101 · Mailpit :8025
 make test-api                   # API unit tests (needs only postgres/redis/minio/mailpit)
 make test-api-integration       # full flow with the worker and the mock planner
 make seed                       # admin@example.com / admin-password-123 on the pro plan with 50 credits
+make test-web                   # Playwright: full flow + Arabic RTL + axe (in the e2e container)
+make lighthouse                 # accessibility ≥ 90 on landing + dashboard
+make web-dev                    # Next.js dev server on the host (needs node 22): http://localhost:3000
 ```
 
 ## Developer workflow (everything runs in Docker)

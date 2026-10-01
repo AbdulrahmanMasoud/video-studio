@@ -1,0 +1,85 @@
+{
+  "app": { "name": "VideoStudio", "tagline": "Finished short videos from a voice note", "skip": "Skip to content" },
+  "nav": { "dashboard": "Dashboard", "new": "New video", "billing": "Billing", "settings": "Settings", "pricing": "Pricing", "login": "Sign in", "register": "Create account", "logout": "Sign out", "language": "Language", "menu": "Menu" },
+  "landing": {
+    "heroTitle": "Turn a voice note into a finished, edited short video",
+    "heroText": "Upload a voice note, a talking-head video or a script. Pick a template, language and size. Get back animated scenes synced to every word, captions, sound effects, music and a mastered mix. Any language, any aspect ratio.",
+    "ctaPrimary": "Start for free",
+    "ctaSecondary": "See pricing",
+    "freeNote": "2 free videos a month, 720p with a watermark. No card needed.",
+    "howTitle": "How it works",
+    "step1Title": "Upload", "step1Text": "A voice note, a camera video or a script. Add photos and clips if you have them.",
+    "step2Title": "Review", "step2Text": "The AI writes the storyboard. You check the preview, fix any text and place your images.",
+    "step3Title": "Render", "step3Text": "Download a mastered MP4 with captions, sound effects and music.",
+    "galleryTitle": "24 templates",
+    "galleryText": "Six are open to everyone today; the rest unlock on paid plans as we polish them.",
+    "faqTitle": "Questions"
+  },
+  "templates": {
+    "enabled": "Available", "comingSoon": "Coming soon", "needsPlan": "Needs {plan}", "requestTitle": "Request a template", "requestText": "Tell us what the video should look like. A link to an example helps.",
+    "requestDescription": "Describe it", "requestUrl": "Example link (optional)", "requestSend": "Send request", "requestThanks": "Thanks! We log every request and build the most wanted ones first."
+  },
+  "auth": {
+    "email": "Email", "password": "Password", "passwordHint": "At least 8 characters", "login": "Sign in", "register": "Create account", "noAccount": "No account yet?", "haveAccount": "Already have an account?",
+    "forgot": "Forgot your password?", "forgotTitle": "Reset your password", "forgotText": "We will email you a link if the address exists.", "forgotSend": "Send reset link", "forgotSent": "Check your inbox for the reset link.",
+    "resetTitle": "Choose a new password", "newPassword": "New password", "resetDone": "Password updated. Sign in with the new one.",
+    "verifyTitle": "Verify your email", "verifying": "Verifying…", "verified": "Your email is verified.", "verifyFailed": "This link is invalid or expired.", "resend": "Send the email again", "resent": "Verification email sent.",
+    "verifyBanner": "Please verify your email. We sent a link to {email}.", "locale": "Interface language"
+  },
+  "dashboard": {
+    "title": "Your videos", "empty": "No videos yet.", "emptyCta": "Make your first video", "credits": "{n, plural, =1 {1 credit} other {# credits}}", "plan": "{plan} plan",
+    "columns": { "title": "Title", "template": "Template", "status": "Status", "updated": "Updated" }
+  },
+  "status": {
+    "created": "Created", "uploading": "Uploading", "queued_transcribe": "Queued", "transcribing": "Transcribing", "editing": "Editing the voice", "planning": "Writing the storyboard",
+    "preview_ready": "Preview ready", "queued_render": "Queued for render", "rendering": "Rendering", "done": "Done", "failed": "Failed"
+  },
+  "wizard": {
+    "title": "New video", "steps": { "source": "Source", "format": "Format", "template": "Template", "assets": "Images & clips", "brief": "Brief" }, "next": "Next", "back": "Back", "create": "Create video", "creating": "Creating…",
+    "sourceTitle": "What do you have?", "sourceUpload": "Upload a recording", "sourceUploadHint": "Voice note or camera video, up to 200 MB and 10 minutes.", "sourceScript": "Paste a script (AI voice)", "sourceScriptHint": "We generate the voice for you.",
+    "dropHere": "Drop a file here or click to choose", "chosen": "{name} · {size}", "tooLong": "This recording is {duration} long; the limit is 10 minutes.", "tooLarge": "This file is larger than 200 MB.", "badType": "Upload an audio or video file.",
+    "uploading": "Uploading {pct}%", "uploaded": "Uploaded", "scriptLabel": "Script", "scriptHint": "30–60 seconds reads best: one idea per sentence.",
+    "language": "Language of the video", "languageAuto": "Detect automatically", "size": "Size", "platform": "Platform", "platformNone": "Other / none", "customSize": "Custom size (WxH)",
+    "templateTitle": "Pick a template", "assetsTitle": "Images and clips (optional)", "assetsHint": "Up to 20 files: JPG, PNG, WebP, HEIC, MP4, MOV. Describe each one in a few words so the AI places it where you talk about it.",
+    "assetDescription": "What is this?", "assetRemove": "Remove", "addAssets": "Add files", "assetsAfterCreate": "Files upload right after the project is created.",
+    "briefTitle": "Brief (optional)", "videoTitle": "Title", "keyPoints": "Key points", "keyPointsHint": "One per line. The AI will not invent facts, so tell it what matters.", "brandColors": "Brand colors", "accent": "Accent", "background": "Background",
+    "summary": "Summary", "requiredSource": "Add a recording or a script first.", "requiredTemplate": "Choose a template."
+  },
+  "project": {
+    "backToList": "All videos", "preview": "Preview", "previewHint": "One frame per scene. Check the texts and where your images go, then render.", "noPreviewYet": "The preview appears here when the storyboard is ready.",
+    "timeline": "Progress", "render": "Render video", "renderCost": "{n, plural, =1 {Uses 1 credit} other {Uses # credits}}", "rendering": "Rendering…", "download": "Download MP4", "retry": "Try again", "delete": "Delete video", "deleteConfirm": "Delete this video and its files?",
+    "texts": "On-screen texts", "textsHint": "Edit the words that appear on screen. Captions follow your voice automatically.", "saveTexts": "Apply and refresh preview", "textsApplied": "Texts updated.", "saving": "Applying…",
+    "assets": "Your images and clips", "assetsHint": "Where each file appears. Swap, remove, or insert an unused file as a full-screen shot.", "slot": "Scene {n}", "unused": "Not used by the AI", "swap": "Swap", "remove": "Remove", "insert": "Insert as full-screen shot",
+    "insertAt": "At the word", "insertDuration": "Duration (seconds)", "insertGo": "Insert", "choose": "Choose a file", "cancel": "Cancel", "applyingAssets": "Updating scenes…",
+    "details": "Details", "template": "Template", "language": "Language", "size": "Size", "duration": "Length", "planner": "Storyboard by", "plannerLlm": "AI", "plannerFallback": "automatic fallback", "cost": "AI cost",
+    "failedTitle": "Something went wrong", "failedStage": "Failed while {stage}", "stage": { "preview": "preparing the preview", "render": "rendering", "edit": "applying your edit" },
+    "doneTitle": "Your video is ready", "watermarkNote": "Free plan: 720p with a watermark. Upgrade for full resolution without watermark.", "eventsLive": "Live", "transcript": "Transcript",
+    "invalidAsset": "This file could not be read and was skipped.", "describedByAi": "described by AI", "qaIssues": "Quality notes"
+  },
+  "billing": {
+    "title": "Plan and credits", "current": "Current plan", "credits": "Credits left", "renews": "Credits renew with each successful payment; unused credits do not roll over.", "choose": "Choose {plan}", "currentPlan": "Your plan", "portal": "Manage subscription",
+    "perMonth": "/month", "features": { "credits": "{n} videos a month", "res": "Up to {res}p", "watermark": "Watermark", "noWatermark": "No watermark", "basic": "6 templates", "all": "All templates", "brandKit": "Brand kit", "priority": "Priority rendering" },
+    "mockTitle": "Test checkout", "mockText": "Payments run in test mode. Confirm to switch to the {plan} plan instantly.", "mockConfirm": "Confirm", "mockDone": "Plan updated.", "free": "Free", "starter": "Starter", "pro": "Pro", "agency": "Agency",
+    "creditRule": "1 credit = one rendered video up to 90 seconds; longer videos use 1 credit per started 90 seconds."
+  },
+  "settings": {
+    "title": "Settings", "brandKit": "Brand kit", "brandKitHint": "Your palette and display font are applied to every template. Available on Pro and Agency.", "palette": "Palette", "displayFont": "Display font (Google Fonts name)", "save": "Save", "saved": "Saved.",
+    "locale": "Interface language", "danger": "Danger zone", "deleteAccount": "Delete my account", "deleteText": "This removes your videos and files. Type your password to confirm.", "deleted": "Account deleted."
+  },
+  "pricing": { "title": "Simple pricing", "text": "Start free. Upgrade when you need more videos, higher resolution or no watermark." },
+  "legal": { "terms": "Terms of service", "privacy": "Privacy policy", "refunds": "Refund policy", "placeholder": "This page is a placeholder. The owner will provide the final text before launch." },
+  "footer": { "rights": "© {year} VideoStudio" },
+  "common": { "loading": "Loading…", "error": "Something went wrong.", "retry": "Retry", "close": "Close", "save": "Save", "or": "or", "optional": "optional", "yes": "Yes", "no": "No", "words": "words", "back": "Back" },
+  "errors": {
+    "bad_credentials": "Wrong email or password.", "email_taken": "An account with this email already exists.", "csrf": "Your session expired. Reload the page and try again.", "unauthenticated": "Please sign in.",
+    "email_unverified": "Verify your email first.", "token_invalid": "This link is invalid or expired.", "rate_limited": "Too many requests. Try again in a minute.", "too_many_jobs": "A video is already in progress. Wait for it to finish.",
+    "insufficient_credits": "You do not have enough credits for this video.", "plan_required": "This needs a higher plan.", "template_disabled": "This template is not available yet.", "unknown_template": "Unknown template.",
+    "input_required": "Add a recording or a script.", "tts_disabled": "AI voice is not enabled. Upload a recording.", "input_missing": "The upload was not found. Upload again.", "file_too_large": "The file is too large.",
+    "unsupported_type": "This file type is not supported.", "too_many_assets": "A project can have 20 files.", "upload_missing": "The file was not uploaded.", "asset_in_use": "Remove the file from its scene first.",
+    "not_preview_ready": "Wait for the preview to be ready.", "not_done": "The video is not rendered yet.", "not_failed": "Only failed videos can be retried.", "input_too_long": "The recording is longer than 10 minutes.",
+    "input_invalid": "We could not read this file as audio or video.", "asset_invalid": "We could not read this file.", "plan_failed": "The AI could not produce a valid storyboard. Try again or pick another template.",
+    "plan_invalid": "That edit broke the storyboard and was not applied.", "llm_unavailable": "The AI service is unavailable right now.", "timeout": "This step took too long and was stopped.", "worker_crash": "A worker crashed. Retrying usually fixes it.",
+    "engine_error": "The rendering engine reported an error.", "cancelled": "Cancelled.", "validation_error": "Please check the form.", "not_found": "Not found.", "project_busy": "Wait for the current step to finish.",
+    "nothing_to_do": "Nothing to change.", "invalid_slot": "That scene cannot hold an image.", "unknown_asset": "Unknown file.", "invalid_word": "Pick a word from the transcript.", "intake_missing": "Language and size are required."
+  }
+}

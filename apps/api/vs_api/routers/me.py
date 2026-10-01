@@ -12,21 +12,22 @@ from ..core.models import BrandKit, Project, User
 from ..core.security import verify_password
 from ..deps import DB, CurrentUser, err
 from ..routers.auth import clear_session_cookies, user_out
-from ..schemas import BrandKitIn, BrandKitOut, DeleteMeIn, MeOut, Msg, UpdateMeIn, UserOut
+from ..schemas import BrandKitIn, BrandKitOut, DeleteMeIn, FeaturesOut, LimitsOut, MeOut, Msg, PlanInfo, UpdateMeIn, UserOut
 
 router = APIRouter(prefix="/me", tags=["me"])
 
 
-def _features() -> dict:
+def _features() -> FeaturesOut:
     s = get_settings()
-    return {"tts": s.tts_enabled and s.tts_provider != "none", "google_oauth": s.google_oauth_enabled, "payments_provider": s.payments_provider}
+    return FeaturesOut(tts=bool(s.tts_enabled and s.tts_provider != "none"), google_oauth=s.google_oauth_enabled, payments_provider=s.payments_provider)
 
 
 async def _me(db, user: User) -> MeOut:
     bk = (await db.execute(select(BrandKit).where(BrandKit.user_id == user.id))).scalar_one_or_none()
     rules = plans.render_rules(user.plan)
-    lim = {**plans.limits(), "concurrent_jobs": plans.concurrency_limit(user.plan), "projects_per_hour": plans.projects_per_hour(user.plan)}
-    return MeOut(user=user_out(user), plan={**plans.plan(user.plan), **rules},
+    raw_limits = {k: v for k, v in plans.limits().items() if not isinstance(v, dict)}
+    lim = LimitsOut(**raw_limits, concurrent_jobs=plans.concurrency_limit(user.plan), projects_per_hour=plans.projects_per_hour(user.plan))
+    return MeOut(user=user_out(user), plan=PlanInfo(**{**plans.plan(user.plan), **rules}),
                  brand_kit=BrandKitOut(palette=bk.palette, fonts=bk.fonts, logo_key=bk.logo_key, updated_at=bk.updated_at) if bk else None,
                  limits=lim, features=_features())
 

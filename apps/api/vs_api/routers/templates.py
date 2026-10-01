@@ -9,7 +9,7 @@ from sqlalchemy import select
 from ..core import catalog, plans
 from ..core.models import TemplateFlag, User
 from ..deps import DB, optional_user
-from ..schemas import CatalogOut, TemplateOut
+from ..schemas import CatalogOut, LanguageOut, SizeOut, TemplateOut
 
 router = APIRouter(prefix="/templates", tags=["templates"])
 
@@ -34,4 +34,5 @@ async def list_templates(db: DB, user: Annotated[User | None, Depends(optional_u
     items = [template_out(t, fl.get(t["name"]), user) for t in catalog.templates()]
     if not include_disabled:
         items = [t for t in items if t.enabled]
-    return CatalogOut(templates=items, sizes=catalog.SIZES, platforms=catalog.PLATFORMS, languages=catalog.LANGUAGES, limits=plans.limits())
+    return CatalogOut(templates=items, sizes=[SizeOut(**s) for s in catalog.SIZES], platforms=catalog.PLATFORMS, languages=[LanguageOut(**lang) for lang in catalog.LANGUAGES],
+                      limits=plans.limits())

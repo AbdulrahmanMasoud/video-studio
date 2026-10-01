@@ -19,3 +19,9 @@ scratch/
 # os
 .DS_Store
 .build/
+# web
+apps/web/node_modules/
+apps/web/.next/
+apps/web/playwright-report/
+apps/web/test-results/
+apps/web/public/previews/

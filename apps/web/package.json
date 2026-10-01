@@ -1,0 +1,40 @@
+{
+  "name": "vs-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "gen:api": "openapi-typescript ${OPENAPI_URL:-http://localhost:8000/openapi.json} -o src/lib/api-types.d.ts",
+    "e2e": "playwright test",
+    "lighthouse": "node e2e/lighthouse.mjs",
+    "sync:previews": "node scripts/sync-previews.mjs",
+    "predev": "npm run -s sync:previews",
+    "prebuild": "npm run -s sync:previews"
+  },
+  "dependencies": {
+    "next": "15.5.27",
+    "next-intl": "^4.3.0",
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@eslint/eslintrc": "^3.3.1",
+    "@playwright/test": "^1.55.0",
+    "@tailwindcss/postcss": "^4.1.0",
+    "@types/node": "22.20.4",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "chrome-launcher": "^1.2.0",
+    "eslint": "^9.30.0",
+    "eslint-config-next": "15.5.27",
+    "lighthouse": "^12.8.0",
+    "openapi-typescript": "^7.9.0",
+    "tailwindcss": "^4.1.0",
+    "typescript": "5.9.3"
+  }
+}

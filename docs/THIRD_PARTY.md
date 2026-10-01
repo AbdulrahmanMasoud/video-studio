@@ -41,6 +41,24 @@ how copyleft tooling is handled.
 | httpx | BSD-3 |
 | postgres:16, redis:7, minio, mailpit (containers) | PostgreSQL / BSD-3 / AGPL-3 (MinIO, unmodified server, dev only) / MIT |
 
+## Web image
+
+| component | license |
+|---|---|
+| Next.js, React | MIT |
+| next-intl | MIT |
+| Tailwind CSS | MIT |
+| Inter, IBM Plex Sans Arabic (Google Fonts via next/font) | OFL-1.1 |
+
+## Web dev / test only
+
+| component | license |
+|---|---|
+| TypeScript, ESLint, eslint-config-next | Apache-2.0 / MIT |
+| Playwright, @axe-core/playwright | Apache-2.0 / MPL-2.0 (axe-core) |
+| Lighthouse, chrome-launcher | Apache-2.0 |
+| openapi-typescript | MIT |
+
 ## Dev / test only
 
 | component | license |
