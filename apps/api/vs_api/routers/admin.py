@@ -8,7 +8,7 @@ from sqlalchemy import select
 
 from ..core import credits
 from ..core.llm_settings import LLMSettings, provider_status
-from ..core.models import AppSetting, Project, TemplateFlag, TemplateRequest, User
+from ..core.models import AppSetting, Project, TemplateFlag, TemplateRequest, User, WebhookEvent
 from ..deps import DB, Admin, err
 from ..routers.auth import user_out
 from ..schemas import GrantCreditsIn, LLMSettingsIn, LLMSettingsOut, Msg, ToggleTemplateIn, UserOut
@@ -90,3 +90,10 @@ async def list_template_requests(_: Admin, db: DB, limit: int = Query(100, le=50
 async def env_info(_: Admin):
     keys = ["APP_ENV", "PLANNER_MODE", "WHISPER_MODEL", "PAYMENTS_PROVIDER", "TTS_PROVIDER", "EMAIL_PROVIDER"]
     return {k: os.environ.get(k) for k in keys}
+
+
+@router.get("/webhooks")
+async def list_webhooks(_: Admin, db: DB, limit: int = Query(50, le=500)):
+    rows = (await db.execute(select(WebhookEvent).order_by(WebhookEvent.created_at.desc()).limit(limit))).scalars().all()
+    return [{"id": str(w.id), "provider": w.provider, "event": (w.payload.get("meta") or {}).get("event_name"), "external_event_id": w.external_event_id,
+             "processed_at": w.processed_at, "error": w.error, "created_at": w.created_at} for w in rows]

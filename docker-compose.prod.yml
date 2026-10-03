@@ -1,0 +1,99 @@
+# Production overrides: `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d`
+# Adds Caddy (TLS), removes MinIO/Mailpit, restart policies, resource limits, no published dev ports.
+name: videostudio
+services:
+  postgres:
+    ports: !override []
+    restart: always
+    deploy:
+      resources:
+        limits: { memory: 1g }
+  redis:
+    restart: always
+    deploy:
+      resources:
+        limits: { memory: 512m }
+  minio:
+    profiles: ["dev-only"]
+  minio-init:
+    profiles: ["dev-only"]
+  mailpit:
+    profiles: ["dev-only"]
+  api:
+    build:
+      dockerfile: infra/docker/api.Dockerfile
+    ports: !override []
+    depends_on: !override
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      APP_ENV: prod
+      COOKIE_SECURE: "1"
+      S3_PUBLIC_ENDPOINT_URL: ${S3_PUBLIC_ENDPOINT_URL}
+      WEB_ORIGIN: ${WEB_ORIGIN}
+    restart: always
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 768m }
+  worker:
+    build:
+      args:
+        WHISPER_MODEL: ${WHISPER_MODEL:-medium}
+    depends_on: !override
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      PLANNER_MODE: ${PLANNER_MODE:-llm}
+      VT_OFFLINE_RENDER: "1"
+    restart: always
+    deploy:
+      replicas: ${WORKER_CONCURRENCY:-2}
+      resources:
+        limits: { cpus: "3.0", memory: 4g }
+  web:
+    build:
+      args:
+        API_INTERNAL_URL: http://api:8000
+    ports: !override []
+    restart: always
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 512m }
+  caddy:
+    image: caddy:2
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+      - web
+  backup:
+    image: postgres:16
+    restart: always
+    env_file: .env
+    entrypoint: ["/bin/sh", "/backup.sh"]
+    volumes:
+      - ./infra/scripts/pg-backup.sh:/backup.sh:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits: { memory: 256m }
+
+volumes:
+  caddy_data:
+  caddy_config:

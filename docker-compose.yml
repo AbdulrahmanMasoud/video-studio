@@ -78,6 +78,7 @@ services:
     environment:
       S3_PUBLIC_ENDPOINT_URL: ${S3_PUBLIC_ENDPOINT_URL:-http://localhost:9100}
       WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000}
+      RATE_LIMITS_ENABLED: ${RATE_LIMITS_ENABLED:-1}      # 0 for load tests
     depends_on:
       postgres:
         condition: service_healthy

@@ -29,7 +29,7 @@ export default function Dashboard() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">{t("title")}</h1>
-          {me && <p className="text-sm text-ink/70">{t("plan", { plan: me.plan.name })} · {t("credits", { n: me.user.credits })}</p>}
+          {me && <p className="text-sm text-ink-2">{t("plan", { plan: me.plan.name })} · {t("credits", { n: me.user.credits })}</p>}
         </div>
         <Link href="/app/new" className="btn-primary" data-testid="new-video">{tn("new")}</Link>
       </div>
@@ -38,22 +38,22 @@ export default function Dashboard() {
         <div className="py-10"><Spinner /></div>
       ) : items.length === 0 ? (
         <div className="card mt-6 text-center">
-          <p className="text-ink/70">{t("empty")}</p>
+          <p className="text-ink-2">{t("empty")}</p>
           <Link href="/app/new" className="btn-primary mt-4">{t("emptyCta")}</Link>
         </div>
       ) : (
         <div className="card mt-6 overflow-x-auto p-0">
           <table className="w-full text-sm">
-            <thead className="bg-ink/5 text-start text-xs uppercase text-ink/60">
+            <thead className="bg-surface-2 text-start text-xs uppercase text-ink-2">
               <tr><th className="px-4 py-2 text-start">{t("columns.title")}</th><th className="px-4 py-2 text-start">{t("columns.template")}</th><th className="px-4 py-2 text-start">{t("columns.status")}</th><th className="px-4 py-2 text-start">{t("columns.updated")}</th></tr>
             </thead>
             <tbody>
               {items.map((p) => (
-                <tr key={p.id} className="border-t border-ink/10 hover:bg-ink/[0.02]">
+                <tr key={p.id} className="border-t border-line hover:bg-surface-2">
                   <td className="px-4 py-3"><Link href={`/app/projects/${p.id}`} className="font-semibold text-brand hover:underline">{p.title}</Link></td>
                   <td className="px-4 py-3">{p.template}</td>
-                  <td className="px-4 py-3"><StatusChip status={p.status} />{isActive(p.status) && <span className="ms-2 text-xs text-ink/60">{p.progress}%</span>}</td>
-                  <td className="px-4 py-3 text-ink/70">{fmtDate(p.updated_at, locale)}</td>
+                  <td className="px-4 py-3"><StatusChip status={p.status} />{isActive(p.status) && <span className="ms-2 text-xs text-ink-2">{p.progress}%</span>}</td>
+                  <td className="px-4 py-3 text-ink-2">{fmtDate(p.updated_at, locale)}</td>
                 </tr>
               ))}
             </tbody>

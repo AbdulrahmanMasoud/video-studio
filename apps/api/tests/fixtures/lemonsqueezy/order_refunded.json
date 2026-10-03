@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "event_name": "order_refunded",
+    "custom_data": {
+      "user_id": "{USER_ID}",
+      "plan": "pro"
+    }
+  },
+  "data": {
+    "type": "orders",
+    "id": "777",
+    "attributes": {
+      "store_id": 1,
+      "customer_id": 9001,
+      "identifier": "ord_abc",
+      "order_number": 42,
+      "user_name": "Test",
+      "user_email": "{EMAIL}",
+      "currency": "USD",
+      "status": "refunded",
+      "status_formatted": "Refunded",
+      "refunded": true,
+      "refunded_at": "2026-10-04T10:00:00.000000Z",
+      "subtotal": 2900,
+      "total": 2900,
+      "total_usd": 2900,
+      "first_order_item": {
+        "id": 1,
+        "order_id": 777,
+        "product_id": 50,
+        "variant_id": 100002,
+        "product_name": "Pro",
+        "variant_name": "Monthly",
+        "price": 2900,
+        "test_mode": true
+      },
+      "test_mode": true
+    }
+  }
+}

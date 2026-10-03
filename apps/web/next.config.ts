@@ -6,6 +6,7 @@ const API_INTERNAL_URL = process.env.API_INTERNAL_URL || "http://localhost:8000"
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  env: { NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN || "" },
   reactStrictMode: true,
   poweredByHeader: false,
   // The browser talks to the API through same-origin /api/* so cookies stay first-party and CORS is a non-issue.

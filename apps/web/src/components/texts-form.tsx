@@ -23,14 +23,14 @@ export function TextsForm({ projectId, fields, disabled, onApplied }: { projectI
       <form className="mt-3 grid gap-3 sm:grid-cols-2" onSubmit={async (e) => { e.preventDefault(); setBusy(true); setError(null); setApplied(false); try { await api(`/projects/${projectId}/texts`, { method: "POST", json: { fields: changed.map((f) => ({ path: f.path, value: values[f.path] })) } }); setApplied(true); await onApplied(); } catch (err) { setError(err); } finally { setBusy(false); } }}>
         {fields.map((f) => (
           <label key={f.path} className="text-sm">
-            <span className="mb-1 block text-xs text-ink/60">{f.label}</span>
+            <span className="mb-1 block text-xs text-ink-2">{f.label}</span>
             <input className="input" data-testid={`field-${f.path}`} maxLength={f.maxLen} value={values[f.path] ?? ""} disabled={disabled || busy} onChange={(e) => setValues({ ...values, [f.path]: e.target.value })} />
           </label>
         ))}
         <div className="sm:col-span-2">
           <ErrorText error={error} />
           <button type="submit" className="btn-primary" data-testid="apply-texts" disabled={disabled || busy || changed.length === 0}>{busy ? t("saving") : t("saveTexts")}</button>
-          {applied && <span className="ms-3 text-sm text-green-700">{t("textsApplied")}</span>}
+          {applied && <span className="ms-3 text-sm text-green-300">{t("textsApplied")}</span>}
         </div>
       </form>
     </section>

@@ -11,7 +11,7 @@ decisions and progress.
 
 ## Status
 
-Phases 0–4 are done: engine verified in Docker, engine productised, worker pipeline, LLM planner (LiteLLM, all providers) with mock, API + database + queues + compose stack, bilingual Next.js web app with e2e tests.
+Phases 0–6 are done (MVP): engine verified in Docker, engine productised, worker pipeline, LLM planner (LiteLLM, all providers) with mock, API + database + queues + compose stack, bilingual Next.js web app with e2e tests.
 See `docs/PROGRESS.md` for what was tested and what is open, `CHANGELOG.md` for the change list.
 
 ## Run the stack
@@ -27,6 +27,18 @@ make test-web                   # Playwright: full flow + Arabic RTL + axe (in t
 make lighthouse                 # accessibility ≥ 90 on landing + dashboard
 make web-dev                    # Next.js dev server on the host (needs node 22): http://localhost:3000
 ```
+
+## Deploy to production
+
+One VM with Docker: follow `docs/RUNBOOK.md` (fresh-VM steps), fill `.env` from `docs/CREDENTIALS.md`, then
+
+```bash
+make prod-up        # docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build  (Caddy TLS, no MinIO/Mailpit)
+make prod-logs
+make backup-now     # pg_dump → S3 (also nightly by the backup service)
+```
+
+Object storage in prod is Cloudflare R2 (or any S3), email is Resend, payments are Lemon Squeezy, LLM is whichever key you set.
 
 ## Developer workflow (everything runs in Docker)
 

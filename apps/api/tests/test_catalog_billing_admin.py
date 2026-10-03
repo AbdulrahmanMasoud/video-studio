@@ -36,7 +36,7 @@ async def test_billing_plans_and_mock_subscribe(client):
     r = await client.get("/billing/portal", headers=u["headers"])
     assert r.status_code == 200
     r = await client.post("/billing/webhooks/lemonsqueezy", content=b"{}")
-    assert r.status_code == 501
+    assert r.status_code == 200  # mock provider accepts unsigned bodies; an empty payload is an unknown event
 
 
 async def test_brand_kit_requires_plan(client):

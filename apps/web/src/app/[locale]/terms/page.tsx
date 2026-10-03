@@ -7,7 +7,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   return (
     <article className="prose max-w-3xl py-6">
       <h1 className="text-3xl font-extrabold">{t("terms")}</h1>
-      <p className="mt-4 text-ink/70">{t("placeholder")}</p>
+      <p className="mt-4 text-ink-2">{t("placeholder")}</p>
     </article>
   );
 }

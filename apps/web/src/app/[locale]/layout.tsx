@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans_Arabic, Inter } from "next/font/google";
+import { IBM_Plex_Sans_Arabic, Inter, Space_Grotesk } from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { isRtl, routing } from "@/i18n/routing";
 import { AuthProvider } from "@/components/auth-provider";
+import { SentryClient } from "@/components/sentry-client";
+import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import "../globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
+const grotesk = Space_Grotesk({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-display", display: "swap" });
 const plexArabic = IBM_Plex_Sans_Arabic({ subsets: ["arabic"], weight: ["400", "500", "600", "700"], variable: "--font-arabic", display: "swap" });
 
 export function generateStaticParams() {
@@ -27,13 +30,15 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "app" });
   return (
-    <html lang={locale} dir={isRtl(locale) ? "rtl" : "ltr"} className={`${inter.variable} ${plexArabic.variable}`}>
+    <html lang={locale} dir={isRtl(locale) ? "rtl" : "ltr"} className={`${inter.variable} ${grotesk.variable} ${plexArabic.variable}`}>
       <body className="min-h-screen antialiased">
         <a href="#main" className="sr-only sr-only-focusable">{t("skip")}</a>
         <NextIntlClientProvider>
           <AuthProvider>
+            <SentryClient />
             <SiteHeader />
             <main id="main" className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6 sm:px-6">{children}</main>
+            <SiteFooter />
           </AuthProvider>
         </NextIntlClientProvider>
       </body>

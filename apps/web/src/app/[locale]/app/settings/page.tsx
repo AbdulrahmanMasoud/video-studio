@@ -46,18 +46,18 @@ export default function Settings() {
             {PALETTE_KEYS.map((k) => (
               <label key={k} className="text-sm">
                 <span className="mb-1 block capitalize">{k}</span>
-                <input type="color" className="h-10 w-full rounded border border-ink/20" value={palette[k] || "#2f3cf0"} onChange={(e) => setPalette({ ...palette, [k]: e.target.value })} aria-label={k} />
+                <input type="color" className="h-10 w-full rounded border border-line" value={palette[k] || "#2f3cf0"} onChange={(e) => setPalette({ ...palette, [k]: e.target.value })} aria-label={k} />
               </label>
             ))}
           </fieldset>
           <Field label={t("displayFont")} htmlFor="font"><input id="font" className="input" disabled={!canBrand} value={font} onChange={(e) => setFont(e.target.value)} placeholder="Cairo" /></Field>
           <ErrorText error={error} />
           <button type="submit" className="btn-primary" disabled={!canBrand}>{t("save")}</button>
-          {saved && <span className="ms-3 text-sm text-green-700">{t("saved")}</span>}
+          {saved && <span className="ms-3 text-sm text-green-300">{t("saved")}</span>}
         </form>
       </section>
-      <section className="card mt-4 border-red-200">
-        <h2 className="font-semibold text-red-700">{t("danger")}</h2>
+      <section className="card mt-4 border-red-500/30">
+        <h2 className="font-semibold text-red-300">{t("danger")}</h2>
         <p className="hint">{t("deleteText")}</p>
         <form className="mt-3 flex flex-wrap items-end gap-3" onSubmit={async (e) => { e.preventDefault(); setError(null); try { await api("/me", { method: "DELETE", json: { password } }); await logout(); router.push("/"); } catch (err) { setError(err); } }}>
           <div className="flex-1"><label className="label" htmlFor="pw">{ta("password")}</label><input id="pw" type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} required /></div>

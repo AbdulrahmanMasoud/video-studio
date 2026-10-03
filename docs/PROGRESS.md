@@ -196,4 +196,58 @@ Worker (`apps/worker`, package `vs_worker`):
    the defaults (localhost:9100 / localhost:3000) are right for a real browser.
 5. Google OAuth stays behind its flag (not built); the "paste a script" source is disabled in the UI until `TTS_ENABLED=1` with a provider.
 
-## Phase 5 — Billing, plans, limits — not started
+## Phase 5 — Billing, plans, limits — DONE (2026-10-03)
+
+### What was done
+- Lemon Squeezy provider (checkout URL via API, portal link, HMAC webhook verification), mock provider, normalised billing events applied
+  exactly once; subscription lifecycle, renewals, refunds, payment-failed email; `GET /billing/subscription`, `GET /admin/webhooks`.
+- Plan gating verified end to end (watermark + 720p on free, none on paid; template tiers; concurrency 1/3; priority queue for agency).
+- Hourly cleanup job (inputs 7 days, outputs 30/180 days, stale assets, scratch folders) scheduled by the worker at start.
+- Web: billing page with subscription status/portal/checkout confirmation; dark cinematic redesign of the marketing site and app theme.
+- `docs/CREDENTIALS.md` (all keys + Lemon Squeezy setup).
+
+### What was tested
+| check | result |
+|---|---|
+| `pytest apps/api` (26 tests, incl. `test_billing_lemonsqueezy.py`) | passing, coverage 92 % (`payments.py` 83 %, `billing.py` 89 %) |
+| recorded webhook payloads: created → payment_success (credits 2 → 50) → duplicate (no change) → updated (variant → agency) → cancelled (flag, plan kept) → payment_failed (email) → expired (free, credits 2) | asserted |
+| order_refunded after a paid month: credits 50 → 0, plan free, duplicate ignored; bad / missing signature → 401 | asserted |
+| credits under concurrent renders (2 threads, 1 credit, `FOR UPDATE`) | exactly one reservation; release restores the balance |
+| free vs paid render options (watermark / 720 vs none / 2160, priority) | asserted |
+| cleanup job in the running worker | runs, re-schedules itself (`cleanup-hourly` → scheduled) |
+| web after the redesign: lint/typecheck/build, Playwright flow + Arabic RTL (3 pages) + axe, Lighthouse | all passing; accessibility 100 / 100 (muted text token raised to 7:1 contrast) |
+
+## Phase 6 — Hardening and production — DONE (2026-10-03) · **MVP complete**
+
+### What was done
+- `docker-compose.prod.yml` + `infra/caddy/Caddyfile`: TLS (Let's Encrypt), security headers, `/api/*` → api, `/` → web; MinIO/Mailpit on a
+  dev-only profile; restart policies; CPU/memory limits; `backup` sidecar (nightly `pg_dump` → S3, 14 days; `make backup-now`).
+- Sentry (optional, DSN-gated) in api, worker and web; `/metrics` and `/health` already from Phase 3.
+- `infra/scripts/loadtest.py` + `RENDER_DRAFT` + `RATE_LIMITS_ENABLED` compose overrides; `make loadtest`.
+- `docs/RUNBOOK.md` (fresh-VM deploy, day-2 ops, backups/restore, key rotation, incidents, capacity), `docs/SECURITY.md` (§5.10 checklist
+  with the verifying test per item), `docs/CREDENTIALS.md`, README deploy section; CI validates the prod compose config.
+- Legal pages are placeholders (owner provides the texts).
+
+### What was tested
+| check | result |
+|---|---|
+| `docker compose -f docker-compose.yml -f docker-compose.prod.yml config` | valid (api, backup, caddy, postgres, redis, web, worker) |
+| full rebuild of api, worker, web, e2e images from the current tree | ok (web lockfile regenerated with the image's npm) |
+| `pytest apps/api` | 26 passed, 92 % coverage |
+| `pytest apps/worker -m "not slow"` | 72 passed, 7 skipped (keys) |
+| Playwright (flow + RTL + axe) and Lighthouse on the redesigned site | 5 passed; landing 100, dashboard 100 |
+| API integration flow (live api + worker) | passed |
+| **load test**: 10 concurrent jobs, draft renders, mock planner, 1 worker (`RENDER_WORKERS=2`), 6.5 GB Docker VM | 10/10 done in 234 s wall → **2.6 jobs/min per worker**; preview p50 27 s, render p50 123 s, total p50 150 s, max 234 s. Full-resolution renders are ≈4× slower in the render step → plan ≈0.7 jobs/min per worker at 1080p; scale with `WORKER_CONCURRENCY`. |
+
+### Known limitations (MVP)
+1. The owner's real-LLM manual run (Phase 2 DoD) has not been done here: no provider key in this environment. With a key, `make plan-run` or
+   any project in the UI exercises it.
+2. Google OAuth is behind its flag and not implemented.
+3. The "paste a script" source needs `TTS_ENABLED=1` and an OpenAI key; it is hidden in the UI otherwise.
+4. Lemon Squeezy is wired and tested against recorded payloads; a live checkout has to be verified once with real test-mode keys
+   (`docs/CREDENTIALS.md`, "Send test event").
+5. Legal pages are placeholders. Outputs in object storage are not backed up (rely on bucket versioning).
+6. The fallback planner's storyboards are intentionally plain; quality comes from the LLM planner.
+7. Whisper `medium` on CPU is roughly real time; a GPU worker would need a separate image (not built).
+
+## Phase 7 — Mixed templates — not started (post-MVP, waits for the owner's "MVP complete")

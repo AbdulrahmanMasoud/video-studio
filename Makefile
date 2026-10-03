@@ -4,7 +4,7 @@ WHISPER_MODEL ?= small
 SHM ?= 1g
 JOBS ?= $(PWD)/jobs
 
-.PHONY: help worker-image test-worker smoke smoke-all e2e lint-worker plan-run providers up down logs build migrate seed test-api test-api-integration lint-api test web-dev test-web lint-web lighthouse
+.PHONY: web-lock prod-up prod-down prod-logs backup-now loadtest help worker-image test-worker smoke smoke-all e2e lint-worker plan-run providers up down logs build migrate seed test-api test-api-integration lint-api test web-dev test-web lint-web lighthouse
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-16s %s\n", $$1, $$2}'
@@ -99,3 +99,25 @@ test-web: ## Playwright e2e + RTL/axe against the compose stack (mock planner); 
 
 lighthouse: ## Lighthouse accessibility ≥ 90 on landing + dashboard (inside the e2e image)
 	PLANNER_MODE=mock S3_PUBLIC_ENDPOINT_URL=http://minio:9000 WEB_ORIGIN=http://web:3000 $(COMPOSE) --profile e2e run --rm e2e node e2e/lighthouse.mjs
+
+# ---- production ---------------------------------------------------------------------------------------
+PROD = $(COMPOSE) -f docker-compose.yml -f docker-compose.prod.yml
+
+prod-up: ## build and start the production stack (caddy TLS, no minio/mailpit, restart policies, limits)
+	@test -f .env || (echo "copy .env.example to .env and fill it in (docs/CREDENTIALS.md)"; exit 1)
+	$(PROD) up -d --build --remove-orphans
+
+prod-down: ## stop the production stack (keeps volumes)
+	$(PROD) down
+
+prod-logs: ## follow production logs
+	$(PROD) logs -f api worker caddy
+
+backup-now: ## run a database backup to S3 immediately
+	$(PROD) run --rm backup once
+
+loadtest: ## 10 concurrent jobs through the running dev stack (worker in draft mode recommended: RENDER_DRAFT=1)
+	python3 infra/scripts/loadtest.py --api http://localhost:8000 --jobs $${JOBS:-10} --admin-key $$(grep ^ADMIN_API_KEY .env | cut -d= -f2)
+
+web-lock: ## regenerate apps/web/package-lock.json with the same npm the web image uses
+	docker run --rm -v "$(PWD)/apps/web:/w" -w /w -v "$(PWD)/.build/npm-cache-docker:/root/.npm" node:22-bookworm-slim npm install --package-lock-only --no-audit --no-fund

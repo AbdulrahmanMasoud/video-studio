@@ -40,18 +40,18 @@ export function AssetPanel({ project, disabled, onApplied }: { project: Project;
       <h2 className="font-semibold">{t("assets")}</h2>
       <p className="hint">{t("assetsHint")}</p>
       <ErrorText error={error} />
-      {busy && <p className="mt-2 text-sm text-ink/60" aria-live="polite">{t("applyingAssets")}</p>}
+      {busy && <p className="mt-2 text-sm text-ink-2" aria-live="polite">{t("applyingAssets")}</p>}
       <ul className="mt-3 space-y-2">
         {slots.map((s) => {
           const a = s.asset ? byName[s.asset] : null;
           return (
-            <li key={s.path} className="flex flex-wrap items-center gap-3 rounded-lg border border-ink/10 p-2" data-testid={`slot-${s.path}`}>
-              <span className="w-24 text-xs text-ink/60">{t("slot", { n: sceneOf(s.path) })}</span>
+            <li key={s.path} className="flex flex-wrap items-center gap-3 rounded-lg border border-line p-2" data-testid={`slot-${s.path}`}>
+              <span className="w-24 text-xs text-ink-2">{t("slot", { n: sceneOf(s.path) })}</span>
               {a?.thumbnail_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={a.thumbnail_url} alt="" className="h-12 w-12 rounded object-cover" />
               ) : (
-                <span className="flex h-12 w-12 items-center justify-center rounded bg-ink/10 text-xs text-ink/50">—</span>
+                <span className="flex h-12 w-12 items-center justify-center rounded bg-surface-2 text-xs text-ink-3">—</span>
               )}
               <span className="flex-1 text-sm">{a ? `${a.original_name}${a.description ? " · " + a.description : ""}` : "—"}</span>
               {picker === s.path ? (
@@ -79,12 +79,12 @@ export function AssetPanel({ project, disabled, onApplied }: { project: Project;
             {project.unused_assets.map((name) => {
               const a = byName[name];
               return (
-                <li key={name} className="flex flex-wrap items-center gap-3 rounded-lg border border-dashed border-ink/20 p-2" data-testid={`unused-${name}`}>
+                <li key={name} className="flex flex-wrap items-center gap-3 rounded-lg border border-dashed border-line p-2" data-testid={`unused-${name}`}>
                   {a?.thumbnail_url && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={a.thumbnail_url} alt="" className="h-12 w-12 rounded object-cover" />
                   )}
-                  <span className="flex-1 text-sm">{a?.original_name}{a?.description ? ` · ${a.description}` : ""}{a?.description_source === "ai" && <span className="ms-1 text-xs text-ink/50">({t("describedByAi")})</span>}</span>
+                  <span className="flex-1 text-sm">{a?.original_name}{a?.description ? ` · ${a.description}` : ""}{a?.description_source === "ai" && <span className="ms-1 text-xs text-ink-3">({t("describedByAi")})</span>}</span>
                   {insertAsset === name ? (
                     <form className="flex flex-wrap items-end gap-2" onSubmit={(e) => { e.preventDefault(); apply({ insert: [{ asset: name, at_word: insertWord, dur: insertDur }] }); }}>
                       <label className="text-xs">{t("insertAt")}<select className="input mt-1" value={insertWord} onChange={(e) => setInsertWord(Number(e.target.value))}>{words.map((w, i) => (<option key={i} value={i}>{i + 1}. {w.w}</option>))}</select></label>
@@ -102,7 +102,7 @@ export function AssetPanel({ project, disabled, onApplied }: { project: Project;
         </div>
       )}
       {project.assets.some((a) => a.status === "invalid") && (
-        <ul className="mt-3 text-xs text-red-700">{project.assets.filter((a) => a.status === "invalid").map((a) => (<li key={a.id}>{a.original_name}: {t("invalidAsset")}</li>))}</ul>
+        <ul className="mt-3 text-xs text-red-300">{project.assets.filter((a) => a.status === "invalid").map((a) => (<li key={a.id}>{a.original_name}: {t("invalidAsset")}</li>))}</ul>
       )}
     </section>
   );

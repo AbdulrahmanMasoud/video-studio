@@ -21,9 +21,23 @@ from .routers import admin, assets, auth, billing, health, me, projects, templat
 log = logging.getLogger("vs_api")
 
 
+def setup_sentry(dsn: str, env: str) -> None:
+    """Optional error reporting (SENTRY_DSN). PII is not sent; request ids are attached as tags by the middleware."""
+    if not dsn:
+        return
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.fastapi import FastApiIntegration
+        from sentry_sdk.integrations.starlette import StarletteIntegration
+        sentry_sdk.init(dsn=dsn, environment=env, send_default_pii=False, traces_sample_rate=0.05, integrations=[StarletteIntegration(), FastApiIntegration()])
+    except Exception as e:  # never block startup on telemetry
+        logging.getLogger("vs_api").warning("sentry init failed: %s", e)
+
+
 def create_app() -> FastAPI:
     s = get_settings()
     setup_logging(s.log_level)
+    setup_sentry(s.sentry_dsn, s.app_env)
     app = FastAPI(title=f"{s.app_name} API", version="0.1.0", docs_url="/docs" if not s.is_prod else None, redoc_url=None)
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]

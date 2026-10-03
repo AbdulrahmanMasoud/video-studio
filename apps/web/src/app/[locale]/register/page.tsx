@@ -23,7 +23,7 @@ export default function Register() {
         <Field label={t("password")} htmlFor="password" hint={t("passwordHint")}><input id="password" className="input" type="password" autoComplete="new-password" minLength={8} required value={password} onChange={(e) => setPassword(e.target.value)} /></Field>
         <ErrorText error={error} />
         <button className="btn-primary mt-2 w-full" disabled={busy} type="submit">{t("register")}</button>
-        <p className="mt-4 text-center text-sm text-ink/70">{t("haveAccount")} <Link href="/login" className="font-semibold text-brand underline">{t("login")}</Link></p>
+        <p className="mt-4 text-center text-sm text-ink-2">{t("haveAccount")} <Link href="/login" className="font-semibold text-brand underline">{t("login")}</Link></p>
       </form>
     </div>
   );

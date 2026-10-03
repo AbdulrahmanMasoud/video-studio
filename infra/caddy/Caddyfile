@@ -1,0 +1,39 @@
+# Production reverse proxy: TLS from Let's Encrypt, / → web, /api/* → api (prefix stripped), /previews → api.
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+	# API under /api (the web app calls same-origin /api/*; Next.js rewrites are bypassed in prod by routing here first)
+	handle_path /api/* {
+		reverse_proxy api:8000 {
+			flush_interval -1
+			header_up X-Request-Id {http.request.uuid}
+		}
+	}
+	handle /previews/* {
+		reverse_proxy api:8000
+	}
+	# Lemon Squeezy webhooks and health without the /api prefix for convenience
+	handle /billing/webhooks/* {
+		reverse_proxy api:8000
+	}
+	handle /health {
+		reverse_proxy api:8000
+	}
+	handle {
+		reverse_proxy web:3000
+	}
+	log {
+		output stdout
+		format json
+	}
+}

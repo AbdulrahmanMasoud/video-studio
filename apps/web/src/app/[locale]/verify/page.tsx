@@ -18,8 +18,8 @@ function VerifyInner() {
   return (
     <div className="card mt-4" role="status">
       {state === "verifying" && <p>{t("verifying")}</p>}
-      {state === "ok" && <p className="font-semibold text-green-700">{t("verified")} <Link href="/app" className="underline">→</Link></p>}
-      {state === "failed" && <p className="text-red-700">{t("verifyFailed")}</p>}
+      {state === "ok" && <p className="font-semibold text-green-300">{t("verified")} <Link href="/app" className="underline">→</Link></p>}
+      {state === "failed" && <p className="text-red-300">{t("verifyFailed")}</p>}
     </div>
   );
 }

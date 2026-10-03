@@ -16,7 +16,7 @@ function ResetForm() {
     <form className="card mt-4" onSubmit={async (e) => { e.preventDefault(); setError(null); try { await api("/auth/reset", { method: "POST", json: { token, password } }); setDone(true); } catch (err) { setError(err); } }}>
       <Field label={t("newPassword")} htmlFor="password" hint={t("passwordHint")}><input id="password" className="input" type="password" minLength={8} required value={password} onChange={(e) => setPassword(e.target.value)} /></Field>
       <ErrorText error={error} />
-      {done ? <p className="text-sm font-semibold text-green-700">{t("resetDone")} <Link href="/login" className="underline">{t("login")}</Link></p> : <button className="btn-primary w-full" type="submit">{t("resetTitle")}</button>}
+      {done ? <p className="text-sm font-semibold text-green-300">{t("resetDone")} <Link href="/login" className="underline">{t("login")}</Link></p> : <button className="btn-primary w-full" type="submit">{t("resetTitle")}</button>}
     </form>
   );
 }

@@ -113,3 +113,29 @@ source of requirements; this file records the defaults we picked where the brief
     in-process (a 30-line PNG encoder) instead of committing fixtures; the voice fixture is the Phase 3 MP3.
 40. **A project-local npm cache** (`.build/npm-cache`) is used on this machine because `~/.npm/_cacache` contains root-owned entries that
     made `npm install` resolve packages to `undefined`. CI uses a clean cache.
+
+## 2026-10-03 — Phase 5
+
+41. **Webhook idempotency key = SHA-256 of the payload.** Lemon Squeezy does not send an event id; a redelivery carries the same body
+    (→ `duplicate`), a real update carries a new `updated_at` (→ applied). Credit effects are additionally idempotent on their own keys
+    (`invoice:<id>`, `refund:<order>`, `expire:<sub>`), so even a differently-formatted redelivery cannot grant twice.
+42. **The variant id decides the plan**, not `custom_data.plan`: the latter is frozen at checkout time while portal upgrades change the variant.
+43. **Downgrades apply at period end** by relying on Lemon Squeezy's `subscription_expired` (sent when the paid period actually ends), and
+    `cancelled` only sets `cancel_at_period_end`. Refunds downgrade immediately and remove the plan's credits (never below zero).
+44. **Cleanup is a self-rescheduling RQ job** (`cleanup-hourly`) instead of a separate scheduler process: one less container, and
+    `with_scheduler=True` is already on for retries.
+45. **Design pass follows the baseline-ui constraints** with the owner's explicit ask for a cinematic, video-platform look: dark neutral
+    surfaces, a single accent (the templates' yellow), Space Grotesk display type, compositor-only motion (the marquee pauses off-screen and
+    under `prefers-reduced-motion`), no gradients or glow affordances.
+
+## 2026-10-03 — Phase 6
+
+46. **Caddy terminates TLS and routes by path** (`/api/*` → api with the prefix stripped, everything else → web). The web app's `/api` rewrite
+    is therefore never hit in prod, but it stays so `next dev` and the single-container dev flow keep working.
+47. **Backups are a tiny sidecar, not cron on the host:** a `postgres:16` container loops once a day (`pg_dump | gzip` → S3) so the VM needs
+    nothing installed but Docker. Restore is a one-liner in the runbook. Object storage relies on the provider's versioning/lifecycle.
+48. **Sentry is optional and lazy everywhere.** No DSN → no SDK import on the server and no extra bytes in the browser bundle.
+49. **Load testing uses `RENDER_DRAFT=1` and the mock planner** to measure the pipeline's own throughput without LLM cost; full-resolution
+    numbers are derived (the render step is ~4× slower at 1080p).
+50. **The web lockfile is generated with the Docker image's npm** (`node:22` ships npm 10.9) because the host's npm 11 writes a lockfile
+    that npm 10 considers out of sync (`Missing: @swc/helpers@…`). `make web-lock` does this reproducibly.

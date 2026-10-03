@@ -320,6 +320,16 @@ class MockSubscribeIn(BaseModel):
     plan: Literal["free", "starter", "pro", "agency"]
 
 
+class SubscriptionOut(BaseModel):
+    plan: str
+    credits: int
+    provider: str
+    status: str | None = None
+    subscription_plan: str | None = None
+    current_period_end: datetime | None = None
+    cancel_at_period_end: bool = False
+
+
 # ---- admin
 class LLMSettingsOut(BaseModel):
     settings: dict

@@ -43,10 +43,10 @@ export function PlansGrid({ mode }: { mode: "public" | "billing" }) {
         {plans.map((p) => {
           const current = me?.user.plan === p.name;
           return (
-            <li key={p.name} className={`card flex flex-col ${current ? "ring-2 ring-brand" : ""}`}>
+            <li key={p.name} className={`card flex flex-col ${current ? "border-brand" : ""} ${p.name === "pro" && !current ? "border-ink-3" : ""}`}>
               <h3 className="text-lg font-bold">{names[p.name] ?? p.name}</h3>
-              <p className="mt-1 text-3xl font-extrabold">{fmtMoney(p.price_usd, locale)}<span className="text-sm font-normal text-ink/60">{t("perMonth")}</span></p>
-              <ul className="mt-3 flex-1 space-y-1 text-sm text-ink/80">
+              <p className="display mt-1 text-3xl font-bold tabular-nums">{fmtMoney(p.price_usd, locale)}<span className="text-sm font-normal text-ink-2">{t("perMonth")}</span></p>
+              <ul className="mt-3 flex-1 space-y-1 text-sm text-ink-2">
                 <li>{t("features.credits", { n: p.credits })}</li>
                 <li>{t("features.res", { res: p.max_res })}</li>
                 <li>{p.watermark ? t("features.watermark") : t("features.noWatermark")}</li>
@@ -56,7 +56,7 @@ export function PlansGrid({ mode }: { mode: "public" | "billing" }) {
               </ul>
               <div className="mt-4">
                 {current ? (
-                  <span className="chip bg-brand/10 text-brand">{t("currentPlan")}</span>
+                  <span className="chip chip-warn">{t("currentPlan")}</span>
                 ) : p.name === "free" ? (
                   !me && <Link href="/register" className="btn-secondary w-full">{t("choose", { plan: names[p.name] })}</Link>
                 ) : me ? (
@@ -70,7 +70,7 @@ export function PlansGrid({ mode }: { mode: "public" | "billing" }) {
         })}
       </ul>
       {mode === "billing" && <MockCheckout onDone={refresh} />}
-      <p className="mt-4 text-xs text-ink/60">{t("creditRule")}</p>
+      <p className="mt-4 text-xs text-ink-2">{t("creditRule")}</p>
     </div>
   );
 }
@@ -88,12 +88,12 @@ function MockCheckout({ onDone }: { onDone: () => Promise<unknown> }) {
   if (!plan) return null;
   const names = { free: t("free"), starter: t("starter"), pro: t("pro"), agency: t("agency") } as Record<string, string>;
   return (
-    <div role="dialog" aria-labelledby="mock-title" className="card mt-6 border-amber-300 bg-amber-50">
+    <div role="dialog" aria-labelledby="mock-title" className="card mt-6 border-brand/40">
       <h3 id="mock-title" className="font-bold">{t("mockTitle")}</h3>
       <p className="mt-1 text-sm">{t("mockText", { plan: names[plan] ?? plan })}</p>
       <ErrorText error={error} />
       {done ? (
-        <p className="mt-2 text-sm font-semibold text-green-700">{t("mockDone")}</p>
+        <p className="mt-2 text-sm font-semibold text-green-300">{t("mockDone")}</p>
       ) : (
         <button type="button" className="btn-primary mt-3" onClick={async () => { try { await api("/billing/mock/subscribe", { method: "POST", json: { plan } }); await onDone(); setDone(true); router.replace("/app/billing"); } catch (e) { setError(e); } }}>
           {t("mockConfirm")}

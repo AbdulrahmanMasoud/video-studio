@@ -60,6 +60,8 @@ jobs:
         run: docker compose up -d postgres redis minio-init mailpit
       - name: Lint (ruff, mypy)
         run: docker compose run --rm --no-deps -e SKIP_MIGRATIONS=1 api sh -c "cd /app/apps/api && ruff check . && mypy vs_api"
+      - name: Production compose config is valid
+        run: DOMAIN=example.com ACME_EMAIL=x@example.com S3_PUBLIC_ENDPOINT_URL=https://s3.example.com WEB_ORIGIN=https://example.com docker compose -f docker-compose.yml -f docker-compose.prod.yml config -q
       - name: Migrations on a fresh database
         run: docker compose run --rm --no-deps api alembic current
       - name: pytest apps/api (coverage gate 80 %)

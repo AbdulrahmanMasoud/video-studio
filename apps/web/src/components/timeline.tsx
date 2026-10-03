@@ -13,12 +13,12 @@ export function Timeline({ status, progress }: { status: string; progress: numbe
         const state = status === "failed" ? (i < idx ? "done" : "todo") : i < idx ? "done" : i === idx ? "current" : "todo";
         return (
           <li key={s} className="flex items-center gap-2">
-            <span aria-hidden className={`inline-block h-2.5 w-2.5 rounded-full ${state === "done" ? "bg-green-500" : state === "current" ? "bg-brand animate-pulse" : "bg-ink/15"}`} />
-            <span className={state === "todo" ? "text-ink/50" : ""}>{t(s)}</span>
+            <span aria-hidden className={`inline-block h-2.5 w-2.5 rounded-full ${state === "done" ? "bg-green-500/100" : state === "current" ? "bg-brand animate-pulse" : "bg-ink/15"}`} />
+            <span className={state === "todo" ? "text-ink-3" : ""}>{t(s)}</span>
           </li>
         );
       })}
-      <li className="mt-2 h-2 w-full overflow-hidden rounded bg-ink/10" aria-hidden><div className="h-full bg-brand transition-all" style={{ width: `${progress}%` }} /></li>
+      <li className="mt-2 h-2 w-full overflow-hidden rounded bg-surface-2" aria-hidden><div className="h-full bg-brand transition-all" style={{ width: `${progress}%` }} /></li>
     </ol>
   );
 }

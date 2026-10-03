@@ -71,19 +71,19 @@ export default function ProjectPage() {
         <div className="mt-1 flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-bold" data-testid="project-title">{p.title}</h1>
           <StatusChip status={status} />
-          {isActive(status) && <span className="text-sm text-ink/60" aria-live="polite" data-testid="progress">{progress}% · {t("eventsLive")}</span>}
+          {isActive(status) && <span className="text-sm text-ink-2" aria-live="polite" data-testid="progress">{progress}% · {t("eventsLive")}</span>}
         </div>
         <ErrorText error={error} />
         {status === "failed" && (
-          <div className="card mt-4 border-red-200 bg-red-50" role="alert">
-            <h2 className="font-bold text-red-800">{t("failedTitle")}</h2>
-            <p className="text-sm text-red-800">{t("failedStage", { stage: t(`stage.${stageKey}`) })}: {errorMessage}</p>
+          <div className="card mt-4 border-red-500/30 bg-red-500/10" role="alert">
+            <h2 className="font-bold text-red-300">{t("failedTitle")}</h2>
+            <p className="text-sm text-red-300">{t("failedStage", { stage: t(`stage.${stageKey}`) })}: {errorMessage}</p>
             <button type="button" className="btn-primary mt-3" disabled={!!busy} onClick={() => act("retry", () => api(`/projects/${id}/retry`, { method: "POST" }))}>{t("retry")}</button>
           </div>
         )}
         {status === "done" && (
-          <div className="card mt-4 border-green-200 bg-green-50" data-testid="done-card">
-            <h2 className="font-bold text-green-800">{t("doneTitle")}</h2>
+          <div className="card mt-4 border-green-500/30 bg-green-500/10" data-testid="done-card">
+            <h2 className="font-bold text-green-300">{t("doneTitle")}</h2>
             {me?.plan.watermark && <p className="hint">{t("watermarkNote")}</p>}
             <button type="button" className="btn-primary mt-3" data-testid="download" disabled={!!busy}
               onClick={() => act("download", async () => { const r = await api<{ url: string }>(`/projects/${id}/download`); window.open(r.url, "_blank", "noopener"); })}>
@@ -91,7 +91,7 @@ export default function ProjectPage() {
             </button>
             {p.sheet_url && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={p.sheet_url} alt="Final frames" className="mt-4 w-full rounded-lg border border-ink/10" />
+              <img src={p.sheet_url} alt="Final frames" className="mt-4 w-full rounded-lg border border-line" />
             )}
           </div>
         )}
@@ -100,16 +100,16 @@ export default function ProjectPage() {
           <p className="hint">{t("previewHint")}</p>
           {p.preview_url ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={p.preview_url} alt="Storyboard preview, one frame per scene" className="mt-3 w-full rounded-lg border border-ink/10" data-testid="contact-sheet" />
+            <img src={p.preview_url} alt="Storyboard preview, one frame per scene" className="mt-3 w-full rounded-lg border border-line" data-testid="contact-sheet" />
           ) : (
-            <p className="mt-3 text-sm text-ink/60">{t("noPreviewYet")}</p>
+            <p className="mt-3 text-sm text-ink-2">{t("noPreviewYet")}</p>
           )}
           {p.status === "preview_ready" && (
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <button type="button" className="btn-primary" data-testid="render" disabled={!!busy} onClick={() => act("render", () => api(`/projects/${id}/render`, { method: "POST" }))}>
                 {busy === "render" ? t("rendering") : t("render")}
               </button>
-              {p.credits_needed != null && <span className="text-sm text-ink/70">{t("renderCost", { n: p.credits_needed })}</span>}
+              {p.credits_needed != null && <span className="text-sm text-ink-2">{t("renderCost", { n: p.credits_needed })}</span>}
             </div>
           )}
         </section>
@@ -126,12 +126,12 @@ export default function ProjectPage() {
         <section className="card text-sm">
           <h2 className="font-semibold">{t("details")}</h2>
           <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
-            <dt className="text-ink/60">{t("template")}</dt><dd>{p.template}</dd>
-            <dt className="text-ink/60">{t("language")}</dt><dd>{p.detected_lang || p.lang || "—"}</dd>
-            <dt className="text-ink/60">{t("size")}</dt><dd>{p.size_w}×{p.size_h}</dd>
-            <dt className="text-ink/60">{t("duration")}</dt><dd>{fmtDuration(p.duration_s, locale)}</dd>
-            <dt className="text-ink/60">{t("planner")}</dt><dd>{p.planner === "fallback" ? t("plannerFallback") : p.planner ? t("plannerLlm") : "—"}</dd>
-            {p.llm_cost_usd > 0 && <><dt className="text-ink/60">{t("cost")}</dt><dd>${p.llm_cost_usd.toFixed(4)}</dd></>}
+            <dt className="text-ink-2">{t("template")}</dt><dd>{p.template}</dd>
+            <dt className="text-ink-2">{t("language")}</dt><dd>{p.detected_lang || p.lang || "—"}</dd>
+            <dt className="text-ink-2">{t("size")}</dt><dd>{p.size_w}×{p.size_h}</dd>
+            <dt className="text-ink-2">{t("duration")}</dt><dd>{fmtDuration(p.duration_s, locale)}</dd>
+            <dt className="text-ink-2">{t("planner")}</dt><dd>{p.planner === "fallback" ? t("plannerFallback") : p.planner ? t("plannerLlm") : "—"}</dd>
+            {p.llm_cost_usd > 0 && <><dt className="text-ink-2">{t("cost")}</dt><dd>${p.llm_cost_usd.toFixed(4)}</dd></>}
           </dl>
           {qaIssues.length > 0 && <p className="hint">{t("qaIssues")}: {qaIssues.join("; ")}</p>}
           <button type="button" className="btn-danger mt-4 w-full" disabled={!!busy}
@@ -142,7 +142,7 @@ export default function ProjectPage() {
         {p.words && p.words.length > 0 && (
           <details className="card text-sm">
             <summary className="cursor-pointer font-semibold">{t("transcript")}</summary>
-            <p className="mt-2 leading-relaxed text-ink/80">{(p.words as { w: string }[]).map((w) => w.w).join(" ")}</p>
+            <p className="mt-2 leading-relaxed text-ink-2">{(p.words as { w: string }[]).map((w) => w.w).join(" ")}</p>
           </details>
         )}
       </aside>

@@ -114,7 +114,7 @@ export default function NewProject() {
       <h1 className="text-2xl font-bold">{t("title")}</h1>
       <ol className="mt-3 flex flex-wrap gap-2 text-xs" aria-label={t("title")}>
         {STEPS.map((s, i) => (
-          <li key={s} className={`chip ${i === step ? "bg-brand text-white" : i < step ? "bg-brand/10 text-brand" : "bg-ink/10 text-ink/60"}`} aria-current={i === step ? "step" : undefined}>{i + 1}. {t(`steps.${s}`)}</li>
+          <li key={s} className={`chip ${i === step ? "bg-brand text-white" : i < step ? "bg-brand/10 text-brand" : "bg-surface-2 text-ink-2"}`} aria-current={i === step ? "step" : undefined}>{i + 1}. {t(`steps.${s}`)}</li>
         ))}
       </ol>
       <div className="card mt-4">
@@ -122,22 +122,22 @@ export default function NewProject() {
           <div>
             <h2 className="font-semibold">{t("sourceTitle")}</h2>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <button type="button" className={`rounded-lg border p-4 text-start ${mode === "upload" ? "border-brand bg-brand/5" : "border-ink/15"}`} onClick={() => setMode("upload")} aria-pressed={mode === "upload"}>
+              <button type="button" className={`rounded-lg border p-4 text-start ${mode === "upload" ? "border-brand bg-brand/10" : "border-line"}`} onClick={() => setMode("upload")} aria-pressed={mode === "upload"}>
                 <span className="font-semibold">{t("sourceUpload")}</span><span className="hint">{t("sourceUploadHint")}</span>
               </button>
-              <button type="button" className={`rounded-lg border p-4 text-start ${mode === "script" ? "border-brand bg-brand/5" : "border-ink/15"}`} onClick={() => setMode("script")} disabled={!ttsEnabled} aria-pressed={mode === "script"}>
+              <button type="button" className={`rounded-lg border p-4 text-start ${mode === "script" ? "border-brand bg-brand/10" : "border-line"}`} onClick={() => setMode("script")} disabled={!ttsEnabled} aria-pressed={mode === "script"}>
                 <span className="font-semibold">{t("sourceScript")}</span><span className="hint">{t("sourceScriptHint")}</span>
               </button>
             </div>
             {mode === "upload" ? (
               <div className="mt-4">
-                <label htmlFor="input-file" className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-ink/20 p-8 text-sm text-ink/70 hover:border-brand"
+                <label htmlFor="input-file" className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-line p-8 text-sm text-ink-2 hover:border-brand"
                   onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); pickFile(e.dataTransfer.files[0] ?? null); }}>
                   {file ? t("chosen", { name: file.name, size: `${(file.size / 1e6).toFixed(1)} MB` }) : t("dropHere")}
                   <input id="input-file" data-testid="input-file" type="file" accept="audio/*,video/*" className="sr-only" onChange={(e) => pickFile(e.target.files?.[0] ?? null)} />
                 </label>
                 {uploadPct !== null && <p className="mt-2 text-sm" aria-live="polite">{inputKey ? t("uploaded") : t("uploading", { pct: uploadPct })}</p>}
-                {fileError && <p role="alert" className="mt-2 text-sm text-red-700">{fileError}</p>}
+                {fileError && <p role="alert" className="mt-2 text-sm text-red-300">{fileError}</p>}
               </div>
             ) : (
               <Field label={t("scriptLabel")} htmlFor="script" hint={t("scriptHint")}><textarea id="script" className="input min-h-40" value={script} onChange={(e) => setScript(e.target.value)} /></Field>
@@ -172,11 +172,11 @@ export default function NewProject() {
               {catalog.templates.map((tpl: Template) => (
                 <li key={tpl.name}>
                   <button type="button" role="radio" aria-checked={template === tpl.name} disabled={!tpl.available} data-testid={`template-${tpl.name}`}
-                    className={`w-full rounded-lg border p-2 text-start ${template === tpl.name ? "border-brand ring-2 ring-brand" : "border-ink/15"} disabled:opacity-50`} onClick={() => setTemplate(tpl.name)}>
+                    className={`w-full rounded-lg border p-2 text-start ${template === tpl.name ? "border-brand ring-2 ring-brand" : "border-line"} disabled:opacity-50`} onClick={() => setTemplate(tpl.name)}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={`/previews/${tpl.name}.jpg`} alt="" className="aspect-[9/16] w-full rounded object-cover" />
                     <span className="mt-1 block text-sm font-semibold">{tpl.title}</span>
-                    <span className="block text-xs text-ink/60">{tpl.available ? tpl.summary : tt("needsPlan", { plan: tpl.tier_required })}</span>
+                    <span className="block text-xs text-ink-2">{tpl.available ? tpl.summary : tt("needsPlan", { plan: tpl.tier_required })}</span>
                   </button>
                 </li>
               ))}
@@ -196,7 +196,7 @@ export default function NewProject() {
             <p className="hint">{t("assetsAfterCreate")}</p>
             <ul className="mt-3 space-y-2">
               {assets.map((a, i) => (
-                <li key={i} className="flex flex-wrap items-center gap-3 rounded-lg border border-ink/10 p-2">
+                <li key={i} className="flex flex-wrap items-center gap-3 rounded-lg border border-line p-2">
                   <span className="min-w-40 truncate text-sm">{a.file.name}</span>
                   <input className="input flex-1" placeholder={t("assetDescription")} value={a.description} aria-label={t("assetDescription")} onChange={(e) => setAssets(assets.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)))} />
                   <button type="button" className="btn-secondary" onClick={() => setAssets(assets.filter((_, j) => j !== i))}>{t("assetRemove")}</button>
@@ -214,7 +214,7 @@ export default function NewProject() {
               <label className="text-sm">{t("accent")}<input type="text" className="input" placeholder="#FFD43B" value={accent} onChange={(e) => setAccent(e.target.value)} /></label>
               <label className="text-sm">{t("background")}<input type="text" className="input" placeholder="#101820" value={bg} onChange={(e) => setBg(e.target.value)} /></label>
             </fieldset>
-            <div className="mt-4 rounded-lg bg-ink/5 p-3 text-sm">
+            <div className="mt-4 rounded-lg bg-surface-2 p-3 text-sm">
               <strong>{t("summary")}:</strong> {mode === "upload" ? file?.name : t("sourceScript")} · {lang || t("languageAuto")} · {size === "custom" ? customSize : size} · {platform} · {template} · {assets.length} {t("steps.assets").toLowerCase()}
             </div>
           </div>

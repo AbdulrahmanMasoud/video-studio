@@ -22,8 +22,8 @@ export default function Login() {
         <Field label={t("password")} htmlFor="password"><input id="password" className="input" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} /></Field>
         <ErrorText error={error} />
         <button className="btn-primary mt-2 w-full" disabled={busy} type="submit">{t("login")}</button>
-        <p className="mt-4 text-center text-sm text-ink/70"><Link href="/forgot" className="underline">{t("forgot")}</Link></p>
-        <p className="mt-2 text-center text-sm text-ink/70">{t("noAccount")} <Link href="/register" className="font-semibold text-brand underline">{t("register")}</Link></p>
+        <p className="mt-4 text-center text-sm text-ink-2"><Link href="/forgot" className="underline">{t("forgot")}</Link></p>
+        <p className="mt-2 text-center text-sm text-ink-2">{t("noAccount")} <Link href="/register" className="font-semibold text-brand underline">{t("register")}</Link></p>
       </form>
     </div>
   );

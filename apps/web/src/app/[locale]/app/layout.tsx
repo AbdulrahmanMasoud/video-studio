@@ -19,7 +19,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div>
       {!me.user.email_verified && (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm" role="status">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-brand/40 bg-brand/10 px-4 py-2 text-sm" role="status">
           <span>{t("verifyBanner", { email: me.user.email })}</span>
           <button type="button" className="btn-secondary" disabled={resent} onClick={async () => { await api("/auth/resend-verification", { method: "POST" }); setResent(true); }}>{resent ? t("resent") : t("resend")}</button>
         </div>

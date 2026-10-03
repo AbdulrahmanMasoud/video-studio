@@ -93,7 +93,7 @@ def build_spec(s: Session, p: Project, job_dir: Path, *, tier: Literal["free", "
                    lang=p.lang, platform=p.platform, input_path=input_path, script=p.script if not p.input_key else None,
                    tts_provider=cfg.tts_provider if cfg.tts_provider != "none" else None, brief=p.brief or {}, brand=brand,
                    assets=_asset_specs(s, p, job_dir), whisper_model=cfg.whisper_model, duration_limit_s=float(plans.limits().get("input_max_seconds", 600)),
-                   tier=tier, render=RenderOptions(draft=False, watermark=Path(cfg.watermark_path) if rules["watermark"] else None, max_height=rules["max_res"],
+                   tier=tier, render=RenderOptions(draft=os.environ.get("RENDER_DRAFT", "0") in ("1", "true"), watermark=Path(cfg.watermark_path) if rules["watermark"] else None, max_height=rules["max_res"],
                                                    workers=int(os.environ.get("RENDER_WORKERS", "2"))),
                    timeouts=Timeouts(transcribe=cfg.job_timeout_transcribe_s, plan=cfg.job_timeout_plan_s, render=cfg.job_timeout_render_s))
 
@@ -344,3 +344,67 @@ def _register_new_assets(s: Session, p: Project, pipe: Pipeline) -> None:
         elif a.status != "ready":
             a.status, a.error = "ready", None
             a.width, a.height, a.has_alpha, a.duration_s = rec.get("width"), rec.get("height"), bool(rec.get("alpha")), rec.get("duration")
+
+
+# ------------------------------------------------------------------ scheduled cleanup (§5.3 lifecycle)
+CLEANUP_JOB_ID = "cleanup-hourly"
+
+
+def cleanup_job() -> dict:
+    """Inputs are deleted 7 days after `done`; outputs after the plan's retention (30 days free, 180 paid); stale scratch
+    folders and never-uploaded assets are removed. Re-schedules itself every hour (see schedule_cleanup)."""
+    from datetime import datetime, timedelta
+
+    from vs_api.core import plans
+    from vs_api.core.models import ProjectAsset
+
+    now = datetime.utcnow()
+    stats = {"inputs": 0, "outputs": 0, "assets": 0, "scratch": 0}
+    with _session() as s:
+        done: list[Project] = list(s.execute(select(Project).where(Project.status == "done", Project.deleted_at.is_(None))).scalars().all())
+        for p in done:
+            u = s.get(User, p.user_id)
+            retention = plans.render_rules(u.plan if u else "free")["output_retention_days"]
+            age = now - (p.done_at.replace(tzinfo=None) if p.done_at else p.updated_at.replace(tzinfo=None))
+            if p.input_key and age > timedelta(days=int(plans.limits().get("input_retention_days", 7))):
+                try:
+                    storage.delete(p.input_key); p.input_key = None; stats["inputs"] += 1
+                except Exception as e:
+                    log.warning("cleanup input %s: %s", p.id, e)
+            if p.output_key and age > timedelta(days=retention):
+                try:
+                    storage.delete_prefix(f"outputs/{p.user_id}/{p.id}/"); p.output_key = None; p.sheet_key = None; p.preview_key = None
+                    state.transition(s, p, "done", {"expired": True, "retention_days": retention}, force=True); stats["outputs"] += 1
+                except Exception as e:
+                    log.warning("cleanup outputs %s: %s", p.id, e)
+        stale: list[ProjectAsset] = list(s.execute(select(ProjectAsset).where(ProjectAsset.status == "pending")).scalars().all())
+        for a in stale:
+            if now - a.created_at.replace(tzinfo=None) > timedelta(days=1):
+                s.delete(a); stats["assets"] += 1
+        s.commit()
+    root = scratch_root()
+    if root.exists():
+        for d in root.iterdir():
+            try:
+                if d.is_dir() and now.timestamp() - d.stat().st_mtime > 2 * 86400:
+                    shutil.rmtree(d, ignore_errors=True); stats["scratch"] += 1
+            except OSError:
+                pass
+    log.info("cleanup done", extra={"job_id": CLEANUP_JOB_ID, **{}})
+    schedule_cleanup()
+    return stats
+
+
+def schedule_cleanup(delay_s: int = 3600) -> None:
+    """Enqueue the next cleanup run (idempotent: one scheduled job id)."""
+    from datetime import timedelta
+
+    from rq.job import Job
+    from vs_api.core import queue as q
+    try:
+        existing = Job.fetch(CLEANUP_JOB_ID, connection=q.conn())
+        if existing.get_status() in ("queued", "scheduled", "started", "deferred"):
+            return
+    except Exception:
+        pass
+    q.queue("plan").enqueue_in(timedelta(seconds=delay_s), "vs_worker.tasks.cleanup_job", job_id=CLEANUP_JOB_ID, job_timeout=600, result_ttl=600)

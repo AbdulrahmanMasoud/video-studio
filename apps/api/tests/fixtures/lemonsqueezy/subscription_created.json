@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "event_name": "subscription_created",
+    "custom_data": {
+      "user_id": "{USER_ID}",
+      "plan": "pro"
+    },
+    "webhook_id": "wh_1"
+  },
+  "data": {
+    "type": "subscriptions",
+    "id": "123456",
+    "attributes": {
+      "store_id": 1,
+      "customer_id": 9001,
+      "order_id": 777,
+      "order_item_id": 1,
+      "product_id": 50,
+      "variant_id": 100002,
+      "product_name": "Pro",
+      "variant_name": "Monthly",
+      "user_name": "Test",
+      "user_email": "{EMAIL}",
+      "status": "active",
+      "status_formatted": "Active",
+      "card_brand": "visa",
+      "card_last_four": "4242",
+      "cancelled": false,
+      "trial_ends_at": null,
+      "billing_anchor": 3,
+      "renews_at": "2026-11-03T10:00:00.000000Z",
+      "ends_at": null,
+      "created_at": "2026-10-03T10:00:00.000000Z",
+      "updated_at": "2026-10-03T10:00:00.000000Z",
+      "test_mode": true,
+      "urls": {
+        "update_payment_method": "https://my-store.lemonsqueezy.com/subscription/123456/payment-details?expires=1&signature=abc",
+        "customer_portal": "https://my-store.lemonsqueezy.com/billing?expires=1&signature=def"
+      }
+    }
+  }
+}

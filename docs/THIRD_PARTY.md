@@ -39,6 +39,8 @@ how copyleft tooling is handled.
 | slowapi, limits | MIT |
 | sse-starlette | BSD-3 |
 | httpx | BSD-3 |
+| sentry-sdk (optional, DSN-gated) | MIT |
+| caddy:2 (container) | Apache-2.0 |
 | postgres:16, redis:7, minio, mailpit (containers) | PostgreSQL / BSD-3 / AGPL-3 (MinIO, unmodified server, dev only) / MIT |
 
 ## Web image
@@ -47,6 +49,7 @@ how copyleft tooling is handled.
 |---|---|
 | Next.js, React | MIT |
 | next-intl | MIT |
+| @sentry/browser (optional, loaded only with a DSN) | MIT |
 | Tailwind CSS | MIT |
 | Inter, IBM Plex Sans Arabic (Google Fonts via next/font) | OFL-1.1 |
 

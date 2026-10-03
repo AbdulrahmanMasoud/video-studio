@@ -2,7 +2,39 @@
 
 All notable changes to this repository. Format: Keep a Changelog; versions are phases until the MVP ships.
 
-## [Unreleased] — Phase 4: web app
+## [Unreleased] — Phase 6: hardening and production
+
+- `docker-compose.prod.yml`: Caddy (automatic TLS, security headers, `/api/*` → api, `/` → web), MinIO/Mailpit moved to a dev-only profile,
+  restart policies, CPU/memory limits, `backup` service (nightly `pg_dump` → S3, 14-day retention, `make backup-now`).
+- Optional Sentry in api (FastAPI integration), worker (RQ integration) and web (lazy `@sentry/browser` when `NEXT_PUBLIC_SENTRY_DSN` is set).
+- `infra/scripts/loadtest.py` (N concurrent jobs through the API) and `RENDER_DRAFT=1` for cheap environments; `make loadtest`.
+- `docs/RUNBOOK.md` (fresh-VM deploy, day-2 ops, backups/restore, key rotation, incidents, capacity), `docs/SECURITY.md` (§5.10 checklist with
+  the test that verifies each item), README deploy section, `make prod-up / prod-down / prod-logs`.
+- CI validates the production compose configuration.
+
+## [Unreleased] — Phase 5: billing, plans, limits
+
+### API
+- `vs_api.core.payments`: `PaymentsProvider` with `LemonSqueezyProvider` (hosted checkout via the API with `custom_data.user_id`, customer
+  portal link, HMAC-SHA256 webhook verification) and `MockProvider`; webhooks normalised to `BillingEvent`s and applied once (`webhook_events`
+  unique by payload hash): `subscription_created/updated/cancelled/expired`, `subscription_payment_success` (credits renew, idempotent by
+  invoice), `subscription_payment_failed` (email), `order_refunded` (credits removed, downgrade). Plan mapping by variant id.
+- `GET /billing/subscription`, `GET /admin/webhooks`; mock subscribe keeps a `subscriptions` row so the portal/status endpoints behave the same.
+- Credit renewals reset the balance to the plan's allowance (no roll-over) while keeping reservations intact.
+
+### Worker
+- Hourly `cleanup_job` (self-rescheduling through RQ's scheduler): inputs deleted 7 days after `done`, outputs after the plan's retention
+  (30 days free / 180 paid), stale pending assets and old scratch folders removed.
+
+### Web
+- Billing page shows the subscription status (renews/ends on), the portal link and the post-checkout confirmation.
+- Design pass: dark cinematic theme (one accent), display font, sticky header, footer, new landing page (hero, preview marquee that pauses
+  off-screen and under reduced motion, trust strip, how it works, features, filterable template gallery, pricing, FAQ, final CTA).
+
+### Docs
+- `docs/CREDENTIALS.md`: every key, where to get it, Lemon Squeezy step by step.
+
+## Phase 4 — 2026-10-01: web app
 
 ### Web (`apps/web`, Next.js 15 App Router, TypeScript, Tailwind 4, next-intl)
 - Bilingual (en/ar) with `dir="rtl"` for Arabic, logical Tailwind utilities, Inter + IBM Plex Sans Arabic; locale switcher keeps the page.
