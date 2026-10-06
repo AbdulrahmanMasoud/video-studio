@@ -93,8 +93,9 @@ def build_spec(s: Session, p: Project, job_dir: Path, *, tier: Literal["free", "
                    lang=p.lang, platform=p.platform, input_path=input_path, script=p.script if not p.input_key else None,
                    tts_provider=cfg.tts_provider if cfg.tts_provider != "none" else None, brief=p.brief or {}, brand=brand,
                    assets=_asset_specs(s, p, job_dir), whisper_model=cfg.whisper_model, duration_limit_s=float(plans.limits().get("input_max_seconds", 600)),
-                   tier=tier, render=RenderOptions(draft=os.environ.get("RENDER_DRAFT", "0") in ("1", "true"), watermark=Path(cfg.watermark_path) if rules["watermark"] else None, max_height=rules["max_res"],
-                                                   workers=int(os.environ.get("RENDER_WORKERS", "2"))),
+                   tier=tier,
+                   render=RenderOptions(draft=os.environ.get("RENDER_DRAFT", "0") in ("1", "true"), watermark=Path(cfg.watermark_path) if rules["watermark"] else None,
+                                        max_height=rules["max_res"], workers=int(os.environ.get("RENDER_WORKERS", "2"))),
                    timeouts=Timeouts(transcribe=cfg.job_timeout_transcribe_s, plan=cfg.job_timeout_plan_s, render=cfg.job_timeout_render_s))
 
 

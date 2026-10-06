@@ -70,7 +70,10 @@ class LLMClient:
 
     # ------------------------------------------------------------------ public
     def complete_json(self, system: str, messages: list[dict], *, schema: dict | None = None, model: str | None = None, max_tokens: int | None = None,
-                      timeout: float | None = None, task: str = "", images: list[Path | str] | None = None, temperature: float = 0.2) -> LLMResponse:
+                      timeout: float | None = None, task: str = "", images: list[Path | str] | None = None, temperature: float = 0.2,
+                      context: dict | None = None) -> LLMResponse:
+        """`context` is accepted for interface parity with MockLLM (which uses it to shape canned answers) and ignored here."""
+        del context
         model = model or self.settings.planner_model
         max_tokens = max_tokens or self.settings.max_tokens
         timeout = timeout or self.settings.timeout_s

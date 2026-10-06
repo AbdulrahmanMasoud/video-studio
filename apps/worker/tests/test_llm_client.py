@@ -141,3 +141,17 @@ def test_json_mode_detection_uses_litellm_when_present():
     t = Transport('{"a":1}')
     LLMClient(settings(), completion=t).complete_json("s", [{"role": "user", "content": "x"}], model="openai/gpt-4o")
     assert t.calls[0].get("response_format") == {"type": "json_object"}
+
+
+def test_planner_services_accept_real_client(tmp_path):
+    """describe_assets / decide_edits / plan / vision review must work with LLMClient, not only MockLLM (regression: `context` kwarg)."""
+    from PIL import Image
+
+    from vs_worker.planner.llm_planner import LLMPlanner
+    img = tmp_path / "a.jpg"; Image.new("RGB", (8, 8), (9, 9, 9)).save(img)
+    t = Transport('{"descriptions": {"asset_1": "a dark square"}}', '{"drop": [{"from": 1, "to": 2}]}', '{"fixes": []}')
+    planner = LLMPlanner(LLMClient(settings(), completion=t), settings())
+    out = planner.describe_assets([{"name": "asset_1", "kind": "image"}], {"asset_1": {"type": "image", "src": img.resolve().as_uri()}}, tmp_path, "en")
+    assert out[0]["description"] == "a dark square" and out[0]["description_source"] == "ai"
+    assert planner.decide_edits("analysis", "[0] a@0 [1] b@1 [2] c@2 [3] d@3", 40, "en") == "w:1-w:2"
+    assert len(t.calls) == 2 and all("context" not in c for c in t.calls)

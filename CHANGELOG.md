@@ -4,6 +4,10 @@ All notable changes to this repository. Format: Keep a Changelog; versions are p
 
 ## [Unreleased] — Phase 6: hardening and production
 
+### Fixed
+- `worker_crash` on every project in `PLANNER_MODE=llm`: the asset-description and edit-decision steps passed a `context` argument
+  only the mock client accepted. `LLMClient.complete_json` now accepts it; a regression test runs those steps through the real client.
+
 - `docker-compose.prod.yml`: Caddy (automatic TLS, security headers, `/api/*` → api, `/` → web), MinIO/Mailpit moved to a dev-only profile,
   restart policies, CPU/memory limits, `backup` service (nightly `pg_dump` → S3, 14-day retention, `make backup-now`).
 - Optional Sentry in api (FastAPI integration), worker (RQ integration) and web (lazy `@sentry/browser` when `NEXT_PUBLIC_SENTRY_DSN` is set).

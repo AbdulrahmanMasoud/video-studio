@@ -239,6 +239,10 @@ Worker (`apps/worker`, package `vs_worker`):
 | API integration flow (live api + worker) | passed |
 | **load test**: 10 concurrent jobs, draft renders, mock planner, 1 worker (`RENDER_WORKERS=2`), 6.5 GB Docker VM | 10/10 done in 234 s wall → **2.6 jobs/min per worker**; preview p50 27 s, render p50 123 s, total p50 150 s, max 234 s. Full-resolution renders are ≈4× slower in the render step → plan ≈0.7 jobs/min per worker at 1080p; scale with `WORKER_CONCURRENCY`. |
 
+### Fixed after the owner's test (2026-10-05)
+- `TypeError: complete_json() got an unexpected keyword argument 'context'` crashed every preview with a real LLM client configured.
+  Root cause: the describe/edit-decision helpers were only ever exercised with `MockLLM`. Fixed and covered by `test_planner_services_accept_real_client`.
+
 ### Known limitations (MVP)
 1. The owner's real-LLM manual run (Phase 2 DoD) has not been done here: no provider key in this environment. With a key, `make plan-run` or
    any project in the UI exercises it.

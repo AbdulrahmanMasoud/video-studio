@@ -116,10 +116,7 @@ class LLMPlanner:
 
     # ------------------------------------------------------------------ internals
     def _call(self, system, messages, model, task, mock_ctx):
-        kw = {"model": model, "task": task}
-        if getattr(self.llm, "name", "") == "mock":
-            kw["context"] = mock_ctx
-        resp = self.llm.complete_json(system, messages, **kw)
+        resp = self.llm.complete_json(system, messages, model=model, task=task, context=mock_ctx)
         self.usage.append(resp.usage())
         return resp
 
@@ -129,10 +126,9 @@ class LLMPlanner:
             return plan
         fields = editable_fields(plan)
         user = "Editable fields (path → current value):\n" + "\n".join(f"{f['path']} → {f['value']}" for f in fields[:80]) + "\n\n" + VISION_CHECKLIST
-        extra: dict = {"context": {}} if getattr(self.llm, "name", "") == "mock" else {}
         try:
             resp = self.llm.complete_json("You are a meticulous video QA reviewer.", [{"role": "user", "content": user}],
-                                          model=self.settings.vision_model or model, task="vision_review", images=[sheet], **extra)
+                                          model=self.settings.vision_model or model, task="vision_review", images=[sheet], context={})
         except LLMError as e:
             log.warning("vision review skipped: %s", e)
             return plan
