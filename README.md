@@ -1,5 +1,18 @@
 # VideoStudio
 
+## Run it locally in 3 commands
+
+```bash
+cp .env.example .env     # defaults work out of the box (no keys needed)
+make up                  # builds the images on the first run (~15 min), then starts everything
+open http://localhost:3000
+```
+
+Needs Docker Desktop (8 GB memory recommended) and `make`. Sign up on the page that opens, upload a voice note, pick a template,
+wait for the preview, render, download. Emails appear at http://localhost:8025, the API docs at http://localhost:8000/docs.
+`make down` stops it, `make logs` follows the logs. Add `ANTHROPIC_API_KEY=...` (or another LLM key) to `.env` and run `make up`
+again to get AI-written storyboards instead of the built-in fallback planner.
+
 Turn a voice note, a talking-head video or a script into a finished short video: animated scenes synced to every spoken word,
 captions, sound effects, music and mastered audio. Any language (Arabic and other RTL scripts included), any aspect ratio.
 Free tier with a watermark, paid plans with credits.
